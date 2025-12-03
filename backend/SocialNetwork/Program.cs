@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using SocialNetwork.EntityFramework;
 
 namespace SocialNetwork
 {
