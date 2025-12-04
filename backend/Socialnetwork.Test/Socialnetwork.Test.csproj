@@ -25,6 +25,7 @@
     <ProjectReference Include="..\SocialNetwork.Entity\SocialNetwork.Entity.csproj" />
     <ProjectReference Include="..\Socialnetwork.Entityframework\Socialnetwork.Entityframework.csproj" />
     <ProjectReference Include="..\Socialnetwork.Repository\Socialnetwork.Repository.csproj" />
+    <ProjectReference Include="..\SocialNetwork\SocialNetwork.Api.csproj" />
   </ItemGroup>
 
 </Project>
