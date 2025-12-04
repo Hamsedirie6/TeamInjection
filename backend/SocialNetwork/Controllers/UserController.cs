@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Services;
 
-namespace SocialNetwork.Api.Controllers;
+namespace SocialNetwork.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
