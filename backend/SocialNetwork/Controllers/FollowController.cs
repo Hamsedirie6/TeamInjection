@@ -21,4 +21,10 @@ public class FollowController : ControllerBase
         _service.AddFollow(follow);
         return Ok(new { message = "Follow added" });
     }
+    [HttpGet("followers/{userId}")]
+    public IActionResult GetFollowers(int userId)
+    {
+        return Ok(_service.GetFollowers(userId));
+    }
+
 }

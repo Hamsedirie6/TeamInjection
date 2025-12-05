@@ -25,4 +25,17 @@ public class PostController : ControllerBase
 
         return Ok(new { message = "Post created" });
     }
+    [HttpGet("{id}")]
+    public IActionResult Get(int id)
+    {
+        var post = _service.GetById(id);
+        return post == null ? NotFound() : Ok(post);
+    }
+
+    [HttpGet]
+    public IActionResult GetAll()
+    {
+        return Ok(_service.GetAll());
+    }
+
 }

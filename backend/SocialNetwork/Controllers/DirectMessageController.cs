@@ -21,4 +21,10 @@ public class DirectMessageController : ControllerBase
         _service.SendMessage(message);
         return Ok(new { message = "Message sent" });
     }
+    [HttpGet("conversation/{user1}/{user2}")]
+    public IActionResult GetConversation(int user1, int user2)
+    {
+        return Ok(_service.GetConversation(user1, user2));
+    }
+
 }
