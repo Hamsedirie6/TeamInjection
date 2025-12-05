@@ -15,7 +15,7 @@ namespace Socialnetwork.Entityframework
 
         public DbSet<User> Users => Set<User>();
         public DbSet<Post> Posts => Set<Post>();
-        public DbSet<Follow> Followers => Set<Follow>();
+        public DbSet<Follow> Follows => Set<Follow>();
         public DbSet<DirectMessage> DirectMessages => Set<DirectMessage>();
     }
 }

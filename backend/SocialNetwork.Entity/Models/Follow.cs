@@ -9,6 +9,7 @@ namespace SocialNetwork.Entity.Models
     {
         public int Id { get; set; }
         public int FollowerId { get; set; }
-        public int FollowingId { get; set; }
+        public int FollowedId { get; set; }
     }
+
 }
