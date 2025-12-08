@@ -1,63 +1,64 @@
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Services;
-using SocialNetwork.DTOs.DirectMessages;
+using SocialNetwork.DTO;
 using SocialNetwork.Entity.Models;
 
-namespace SocialNetwork.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class DirectMessageController : ControllerBase
+namespace SocialNetwork.Controllers
 {
-    private readonly DirectMessageService _service;
-
-    public DirectMessageController(DirectMessageService service)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class DirectMessageController : ControllerBase
     {
-        _service = service;
-    }
+        private readonly DirectMessageService _service;
 
-    [HttpPost]
-    public IActionResult Send([FromBody] DirectMessageRequest request)
-    {
-        int senderId = 1; // TODO: JWT senare
-
-        var msg = new DirectMessage
+        public DirectMessageController(DirectMessageService service)
         {
-            SenderId = senderId,
-            ReceiverId = request.ReceiverId,
-            Message = request.Message
-        };
+            _service = service;
+        }
 
-        var result = _service.SendMessage(msg);
-
-        if (!result.Success)
-            return BadRequest(new { error = result.ErrorMessage });
-
-        var response = new DirectMessageResponse
+        [HttpPost]
+        public IActionResult Send([FromBody] DirectMessageRequest request)
         {
-            Id = msg.Id,
-            SenderId = msg.SenderId,
-            ReceiverId = msg.ReceiverId,
-            Message = msg.Message,
-            SentAt = msg.SentAt
-        };
+            int senderId = 1; // TODO: JWT senare
 
-        return Ok(response);
-    }
-
-    [HttpGet("conversation/{user1}/{user2}")]
-    public IActionResult GetConversation(int user1, int user2)
-    {
-        var messages = _service.GetConversation(user1, user2)
-            .Select(m => new DirectMessageResponse
+            var msg = new DirectMessage
             {
-                Id = m.Id,
-                SenderId = m.SenderId,
-                ReceiverId = m.ReceiverId,
-                Message = m.Message,
-                SentAt = m.SentAt
-            });
+                SenderId = senderId,
+                ReceiverId = request.ReceiverId,
+                Message = request.Message
+            };
 
-        return Ok(messages);
+            var result = _service.SendMessage(msg);
+
+            if (!result.Success)
+                return BadRequest(new { error = result.ErrorMessage });
+
+            var response = new DirectMessageResponse
+            {
+                Id = msg.Id,
+                SenderId = msg.SenderId,
+                ReceiverId = msg.ReceiverId,
+                Message = msg.Message,
+                SentAt = msg.SentAt
+            };
+
+            return Ok(response);
+        }
+
+        [HttpGet("conversation/{user1}/{user2}")]
+        public IActionResult GetConversation(int user1, int user2)
+        {
+            var messages = _service.GetConversation(user1, user2)
+                .Select(m => new DirectMessageResponse
+                {
+                    Id = m.Id,
+                    SenderId = m.SenderId,
+                    ReceiverId = m.ReceiverId,
+                    Message = m.Message,
+                    SentAt = m.SentAt
+                });
+
+            return Ok(messages);
+        }
     }
 }

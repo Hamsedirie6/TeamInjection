@@ -1,56 +1,57 @@
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Services;
-using SocialNetwork.DTOs.Follows;
+using SocialNetwork.DTO;
 using SocialNetwork.Entity.Models;
 
-namespace SocialNetwork.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class FollowController : ControllerBase
+namespace SocialNetwork.Controllers
 {
-    private readonly FollowService _service;
-
-    public FollowController(FollowService service)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class FollowController : ControllerBase
     {
-        _service = service;
-    }
+        private readonly FollowService _service;
 
-    [HttpPost]
-    public IActionResult Follow([FromBody] FollowRequest request)
-    {
-        int followerId = 1; // TODO: byt till JWT
-
-        var follow = new Follow
+        public FollowController(FollowService service)
         {
-            FollowerId = followerId,
-            FollowedId = request.FollowedId
-        };
+            _service = service;
+        }
 
-        var result = _service.AddFollow(follow);
-
-        if (!result.Success)
-            return BadRequest(new { error = result.ErrorMessage });
-
-        return Ok(new FollowResponse
+        [HttpPost]
+        public IActionResult Follow([FromBody] FollowRequest request)
         {
-            Id = follow.Id,
-            FollowerId = follow.FollowerId,
-            FollowedId = follow.FollowedId
-        });
-    }
+            int followerId = 1; // TODO: byt till JWT
 
-    [HttpGet("followers/{userId}")]
-    public IActionResult GetFollowers(int userId)
-    {
-        var list = _service.GetFollowers(userId)
-            .Select(f => new FollowResponse
+            var follow = new Follow
             {
-                Id = f.Id,
-                FollowerId = f.FollowerId,
-                FollowedId = f.FollowedId
-            });
+                FollowerId = followerId,
+                FollowedId = request.FollowedId
+            };
 
-        return Ok(list);
+            var result = _service.AddFollow(follow);
+
+            if (!result.Success)
+                return BadRequest(new { error = result.ErrorMessage });
+
+            return Ok(new FollowResponse
+            {
+                Id = follow.Id,
+                FollowerId = follow.FollowerId,
+                FollowedId = follow.FollowedId
+            });
+        }
+
+        [HttpGet("followers/{userId}")]
+        public IActionResult GetFollowers(int userId)
+        {
+            var list = _service.GetFollowers(userId)
+                .Select(f => new FollowResponse
+                {
+                    Id = f.Id,
+                    FollowerId = f.FollowerId,
+                    FollowedId = f.FollowedId
+                });
+
+            return Ok(list);
+        }
     }
 }

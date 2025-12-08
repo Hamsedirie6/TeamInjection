@@ -4,7 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace SocialNetwork.DTO
-public class LoginResponse
 {
-    public string Message { get; set; } = "";
+
+    public class LoginResponse
+    {
+        public string Message { get; set; } = "";
+    }
 }

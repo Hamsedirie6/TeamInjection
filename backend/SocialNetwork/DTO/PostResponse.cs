@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SocialNetwork.DTOs;
-
-public class PostResponse
+namespace SocialNetwork.DTO
 {
-    public int Id { get; set; }
-    public int FromUserId { get; set; }
-    public int ToUserId { get; set; }
-    public string Message { get; set; } = "";
-    public DateTime CreatedAt { get; set; }
+    public class PostResponse
+    {
+        public int Id { get; set; }
+        public int FromUserId { get; set; }
+        public int ToUserId { get; set; }
+        public string Message { get; set; } = "";
+        public DateTime CreatedAt { get; set; }
+    }
 }
