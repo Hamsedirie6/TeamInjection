@@ -1,6 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
+import {
+  fetchUsers,
+  resolveUserIdByUsername,
+  toUserMap,
+  type User,
+} from "../api/users";
 
 type DirectMessage = {
   id: number;
@@ -11,15 +17,32 @@ type DirectMessage = {
 
 export default function DirectMessages() {
   const navigate = useNavigate();
-  const [receiverId, setReceiverId] = useState("");
+  const [receiverUsername, setReceiverUsername] = useState("");
   const [message, setMessage] = useState("");
   const [conversation, setConversation] = useState<DirectMessage[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState("");
   const senderId = localStorage.getItem("userId");
 
-  const loadConversation = async () => {
-    if (!senderId || !receiverId) return;
+  const userMap = useMemo(() => toUserMap(users), [users]);
+
+  const loadUsers = async () => {
     try {
+      const all = await fetchUsers();
+      setUsers(all);
+    } catch {
+      // ignore silently for now
+    }
+  };
+
+  const loadConversation = async () => {
+    if (!senderId || !receiverUsername.trim()) return;
+    try {
+      const receiverId = await resolveUserIdByUsername(receiverUsername);
+      if (!receiverId) {
+        setError("Kunde inte hitta mottagare med det användarnamnet");
+        return;
+      }
       const res = await api.get(
         `/directmessage/conversation/${senderId}/${receiverId}`
       );
@@ -38,11 +61,16 @@ export default function DirectMessages() {
       navigate("/login");
       return;
     }
-    if (!receiverId || !message.trim()) return;
+    if (!receiverUsername.trim() || !message.trim()) return;
     setError("");
     try {
+      const receiverId = await resolveUserIdByUsername(receiverUsername);
+      if (!receiverId) {
+        setError("Kunde inte hitta mottagare med det användarnamnet");
+        return;
+      }
       await api.post("/directmessage", {
-        receiverId: Number(receiverId),
+        receiverId,
         message,
       });
       setMessage("");
@@ -61,11 +89,12 @@ export default function DirectMessages() {
       navigate("/login");
       return;
     }
+    loadUsers();
   }, [senderId, navigate]);
 
   useEffect(() => {
     loadConversation();
-  }, [receiverId]);
+  }, [receiverUsername]);
 
   return (
     <div className="card">
@@ -73,10 +102,16 @@ export default function DirectMessages() {
       {error && <p className="error">{error}</p>}
       <div className="stack">
         <input
-          placeholder="Mottares ID"
-          value={receiverId}
-          onChange={(e) => setReceiverId(e.target.value)}
+          placeholder="Mottares användarnamn"
+          value={receiverUsername}
+          onChange={(e) => setReceiverUsername(e.target.value)}
+          list="user-suggestions"
         />
+        <datalist id="user-suggestions">
+          {users.map((u) => (
+            <option key={u.id} value={u.username} />
+          ))}
+        </datalist>
         <input
           placeholder="Meddelande"
           value={message}
@@ -88,7 +123,8 @@ export default function DirectMessages() {
         {conversation.map((m) => (
           <li key={m.id} className="list-item">
             <span className="pill">
-              {m.senderId} → {m.receiverId}
+              {userMap[m.senderId] ?? m.senderId} →{" "}
+              {userMap[m.receiverId] ?? m.receiverId}
             </span>
             <p>{m.message}</p>
           </li>

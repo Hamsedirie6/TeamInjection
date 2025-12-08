@@ -30,6 +30,14 @@ public class PostService
         return _context.Posts.FirstOrDefault(p => p.Id == id);
     }
 
+    public IEnumerable<Post> GetByUser(int userId)
+    {
+        return _context.Posts
+            .Where(p => p.FromUserId == userId || p.ToUserId == userId)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToList();
+    }
+
     public IEnumerable<Post> GetAll()
     {
         return _context.Posts.ToList();

@@ -3,6 +3,7 @@ using SocialNetwork.Services;
 using SocialNetwork.DTO;
 using SocialNetwork.Entity.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace SocialNetwork.Controllers
 {
@@ -20,11 +21,13 @@ namespace SocialNetwork.Controllers
         [HttpPost]
         public IActionResult Follow([FromBody] FollowRequest request)
         {
-            int followerId = 1; // TODO: byt till JWT
+            var followerId = GetUserId();
+            if (followerId == null)
+                return Unauthorized();
 
             var follow = new Follow
             {
-                FollowerId = followerId,
+                FollowerId = followerId.Value,
                 FollowedId = request.FollowedId
             };
 
@@ -53,6 +56,14 @@ namespace SocialNetwork.Controllers
                 });
 
             return Ok(list);
+        }
+
+        private int? GetUserId()
+        {
+            var sub = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (int.TryParse(sub, out var id))
+                return id;
+            return null;
         }
     }
 }

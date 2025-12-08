@@ -3,6 +3,7 @@ using SocialNetwork.Services;
 using SocialNetwork.DTO;
 using SocialNetwork.Entity.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace SocialNetwork.Controllers
 {
@@ -20,11 +21,13 @@ namespace SocialNetwork.Controllers
         [HttpPost]
         public IActionResult Send([FromBody] DirectMessageRequest request)
         {
-            int senderId = 1; // TODO: JWT senare
+            var senderId = GetUserId();
+            if (senderId == null)
+                return Unauthorized();
 
             var msg = new DirectMessage
             {
-                SenderId = senderId,
+                SenderId = senderId.Value,
                 ReceiverId = request.ReceiverId,
                 Message = request.Message
             };
@@ -60,6 +63,14 @@ namespace SocialNetwork.Controllers
                 });
 
             return Ok(messages);
+        }
+
+        private int? GetUserId()
+        {
+            var sub = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (int.TryParse(sub, out var id))
+                return id;
+            return null;
         }
     }
 }

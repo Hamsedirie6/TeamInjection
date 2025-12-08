@@ -19,6 +19,7 @@ export default function Register() {
       const msg =
         err.response?.data?.error ||
         err.response?.data?.message ||
+        err.message ||
         "Registrering misslyckades";
       setError(msg);
     } finally {
@@ -35,12 +36,14 @@ export default function Register() {
         placeholder="Användarnamn"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
+        autoComplete="username"
       />
       <input
         placeholder="Lösenord"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        autoComplete="new-password"
       />
       <button onClick={register} disabled={loading}>
         {loading ? "Registrerar..." : "Registrera"}
