@@ -1,5 +1,15 @@
 # From .NET Core 3.0 you can use the command: `dotnet new gitignore` to generate a customizable .gitignore file
+
+# SQLite database files – VERY IMPORTANT
 app.db
+app.db-shm
+app.db-wal
+
+*.db
+*.db-shm
+*.db-wal
+
+# Swap / temp files
 *.swp
 *.*~
 project.lock.json
@@ -7,7 +17,8 @@ project.lock.json
 *.pyc
 
 # Visual Studio Code
-.vscode
+.vscode/
+!.vscode/extensions.json
 
 # User-specific files
 *.suo
@@ -30,13 +41,17 @@ msbuild.log
 msbuild.err
 msbuild.wrn
 
-# Visual Studio 2015
+# VS 2015+
 .vs/
 
 # React ignores
-node_modules
+node_modules/
+dist/
+dist-ssr/
+*.local
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -44,16 +59,8 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-dist
-dist-ssr
-*.local
-
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
+.idea/
 *.ntvs*
 *.njsproj
 *.sln

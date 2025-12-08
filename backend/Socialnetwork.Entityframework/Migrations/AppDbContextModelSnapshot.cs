@@ -23,18 +23,18 @@ namespace Socialnetwork.Entityframework.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("FromUserId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("ReceiverId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("SentAt")
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("ToUserId")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -47,15 +47,15 @@ namespace Socialnetwork.Entityframework.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("FollowerId")
+                    b.Property<int>("FollowedId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("FollowingId")
+                    b.Property<int>("FollowerId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Followers");
+                    b.ToTable("Follows");
                 });
 
             modelBuilder.Entity("SocialNetwork.Entity.Models.Post", b =>
