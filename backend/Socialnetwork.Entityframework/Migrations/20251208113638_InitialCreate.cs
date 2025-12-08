@@ -17,8 +17,8 @@ namespace Socialnetwork.Entityframework.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    FromUserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    ToUserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    SenderId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ReceiverId = table.Column<int>(type: "INTEGER", nullable: false),
                     Message = table.Column<string>(type: "TEXT", nullable: false),
                     SentAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
@@ -28,17 +28,17 @@ namespace Socialnetwork.Entityframework.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Followers",
+                name: "Follows",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     FollowerId = table.Column<int>(type: "INTEGER", nullable: false),
-                    FollowingId = table.Column<int>(type: "INTEGER", nullable: false)
+                    FollowedId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Followers", x => x.Id);
+                    table.PrimaryKey("PK_Follows", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -79,7 +79,7 @@ namespace Socialnetwork.Entityframework.Migrations
                 name: "DirectMessages");
 
             migrationBuilder.DropTable(
-                name: "Followers");
+                name: "Follows");
 
             migrationBuilder.DropTable(
                 name: "Posts");
