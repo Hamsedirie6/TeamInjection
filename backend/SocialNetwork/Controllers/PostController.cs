@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Services;
 using SocialNetwork.DTO;
 using SocialNetwork.Entity.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SocialNetwork.Controllers
 {
@@ -15,11 +16,11 @@ namespace SocialNetwork.Controllers
         {
             _service = service;
         }
-
+        [Authorize]
         [HttpPost]
         public IActionResult Create([FromBody] CreatePostRequest request)
         {
-            // TODO: hämta från JWT senare
+           
             int fromUserId = 1;
 
             var post = new Post
