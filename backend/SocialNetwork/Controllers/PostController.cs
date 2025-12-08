@@ -82,6 +82,27 @@ namespace SocialNetwork.Controllers
             return Ok(posts);
         }
 
+        [Authorize]
+        [HttpGet("timeline")]
+        public IActionResult GetTimeline()
+        {
+            var userId = GetUserId();
+            if (userId == null)
+                return Unauthorized();
+
+            var posts = _service.GetTimeline(userId.Value)
+                .Select(p => new PostResponse
+                {
+                    Id = p.Id,
+                    FromUserId = p.FromUserId,
+                    ToUserId = p.ToUserId,
+                    Message = p.Message,
+                    CreatedAt = p.CreatedAt
+                });
+
+            return Ok(posts);
+        }
+
         [HttpGet]
         public IActionResult GetAll()
         {

@@ -6,6 +6,7 @@ import Follow from "./pages/Follow";
 import Login from "./pages/Login";
 import Posts from "./pages/Posts";
 import Register from "./pages/Register";
+import Timeline from "./pages/Timeline";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<Posts />} />
+            <Route path="/timeline" element={<Timeline />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/dm" element={<DirectMessages />} />
