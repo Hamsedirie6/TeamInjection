@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Services;
 using SocialNetwork.DTO;
 using SocialNetwork.Entity.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SocialNetwork.Controllers
 {
@@ -15,7 +16,7 @@ namespace SocialNetwork.Controllers
         {
             _service = service;
         }
-
+        [Authorize]
         [HttpPost]
         public IActionResult Send([FromBody] DirectMessageRequest request)
         {
