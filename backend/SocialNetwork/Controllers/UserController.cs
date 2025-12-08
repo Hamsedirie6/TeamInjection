@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Services;
+using SocialNetwork.DTOs.Users;
 
 namespace SocialNetwork.Controllers;
 
@@ -22,12 +23,9 @@ public class UserController : ControllerBase
         if (!result.Success)
             return BadRequest(new { error = result.ErrorMessage });
 
-        return Ok(new { message = result.Message });
+        return Ok(new LoginResponse
+        {
+            Message = result.Message
+        });
     }
-}
-
-public class LoginRequest
-{
-    public string Username { get; set; } = "";
-    public string Password { get; set; } = "";
 }

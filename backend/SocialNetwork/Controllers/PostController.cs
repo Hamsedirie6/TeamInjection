@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SocialNetwork.Services;
+using SocialNetwork.DTOs.Posts;
 using SocialNetwork.Entity.Models;
 
 namespace SocialNetwork.Controllers;
@@ -16,26 +17,64 @@ public class PostController : ControllerBase
     }
 
     [HttpPost]
-    public IActionResult Create([FromBody] Post post)
+    public IActionResult Create([FromBody] CreatePostRequest request)
     {
+        // TODO: hämta från JWT senare
+        int fromUserId = 1;
+
+        var post = new Post
+        {
+            FromUserId = fromUserId,
+            ToUserId = request.ToUserId,
+            Message = request.Message,
+        };
+
         var result = _service.CreatePost(post);
 
         if (!result.Success)
-            return BadRequest(result.ErrorMessage);
+            return BadRequest(new { error = result.ErrorMessage });
 
-        return Ok(new { message = "Post created" });
+        var response = new PostResponse
+        {
+            Id = post.Id,
+            FromUserId = post.FromUserId,
+            ToUserId = post.ToUserId,
+            Message = post.Message,
+            CreatedAt = post.CreatedAt
+        };
+
+        return Ok(response);
     }
+
     [HttpGet("{id}")]
     public IActionResult Get(int id)
     {
         var post = _service.GetById(id);
-        return post == null ? NotFound() : Ok(post);
+        if (post == null) return NotFound();
+
+        return Ok(new PostResponse
+        {
+            Id = post.Id,
+            FromUserId = post.FromUserId,
+            ToUserId = post.ToUserId,
+            Message = post.Message,
+            CreatedAt = post.CreatedAt
+        });
     }
 
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(_service.GetAll());
-    }
+        var posts = _service.GetAll()
+            .Select(p => new PostResponse
+            {
+                Id = p.Id,
+                FromUserId = p.FromUserId,
+                ToUserId = p.ToUserId,
+                Message = p.Message,
+                CreatedAt = p.CreatedAt
+            });
 
+        return Ok(posts);
+    }
 }
