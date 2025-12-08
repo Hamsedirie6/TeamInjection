@@ -17,9 +17,10 @@ export default function Navbar() {
         <Link to="/" className="brand">
           Social
         </Link>
-        <Link to="/">Inlägg</Link>
+        <Link to="/">Mina inlgg</Link>
+        <Link to="/timeline">Tidslinje</Link>
         <Link to="/dm">DM</Link>
-        <Link to="/follow">Följ</Link>
+        <Link to="/follow">Flj</Link>
       </div>
       <div className="nav-right">
         {username ? (

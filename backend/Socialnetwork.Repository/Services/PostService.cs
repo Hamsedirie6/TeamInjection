@@ -38,6 +38,22 @@ public class PostService
             .ToList();
     }
 
+    public IEnumerable<Post> GetTimeline(int userId)
+    {
+        var followedIds = _context.Follows
+            .Where(f => f.FollowerId == userId)
+            .Select(f => f.FollowedId)
+            .ToList();
+
+        // Include own posts in the timeline.
+        followedIds.Add(userId);
+
+        return _context.Posts
+            .Where(p => followedIds.Contains(p.FromUserId))
+            .OrderByDescending(p => p.CreatedAt)
+            .ToList();
+    }
+
     public IEnumerable<Post> GetAll()
     {
         return _context.Posts.ToList();
