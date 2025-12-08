@@ -4,6 +4,7 @@ using SocialNetwork.DTO;
 using SocialNetwork.Entity.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace SocialNetwork.Controllers
 {
@@ -99,7 +100,8 @@ namespace SocialNetwork.Controllers
 
         private int? GetUserId()
         {
-            var sub = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var sub = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                      User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
             if (int.TryParse(sub, out var id))
                 return id;
             return null;
