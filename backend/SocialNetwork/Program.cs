@@ -30,7 +30,9 @@ namespace SocialNetwork
             {
                 options.AddPolicy("Frontend", policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173")
+                    policy.WithOrigins(
+                            "http://localhost:5173",
+                            "https://localhost:5173")
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });

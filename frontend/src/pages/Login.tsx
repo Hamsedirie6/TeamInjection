@@ -22,6 +22,7 @@ export default function Login() {
       const message =
         err.response?.data?.error ||
         err.response?.data?.message ||
+        err.message ||
         "Login misslyckades";
       setError(message);
     } finally {
@@ -37,12 +38,14 @@ export default function Login() {
         placeholder="Användarnamn"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
+        autoComplete="username"
       />
       <input
         placeholder="Lösenord"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        autoComplete="current-password"
       />
       <button onClick={login} disabled={loading}>
         {loading ? "Loggar in..." : "Logga in"}

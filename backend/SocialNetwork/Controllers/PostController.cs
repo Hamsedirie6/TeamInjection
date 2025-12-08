@@ -3,6 +3,7 @@ using SocialNetwork.Services;
 using SocialNetwork.DTO;
 using SocialNetwork.Entity.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace SocialNetwork.Controllers
 {
@@ -20,13 +21,14 @@ namespace SocialNetwork.Controllers
         [HttpPost]
         public IActionResult Create([FromBody] CreatePostRequest request)
         {
-           
-            int fromUserId = 1;
+            var userId = GetUserId();
+            if (userId == null)
+                return Unauthorized();
 
             var post = new Post
             {
-                FromUserId = fromUserId,
-                ToUserId = request.ToUserId,
+                FromUserId = userId.Value,
+                ToUserId = request.ToUserId == 0 ? userId.Value : request.ToUserId,
                 Message = request.Message,
             };
 
@@ -63,6 +65,22 @@ namespace SocialNetwork.Controllers
             });
         }
 
+        [HttpGet("user/{userId}")]
+        public IActionResult GetByUser(int userId)
+        {
+            var posts = _service.GetByUser(userId)
+                .Select(p => new PostResponse
+                {
+                    Id = p.Id,
+                    FromUserId = p.FromUserId,
+                    ToUserId = p.ToUserId,
+                    Message = p.Message,
+                    CreatedAt = p.CreatedAt
+                });
+
+            return Ok(posts);
+        }
+
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -77,6 +95,14 @@ namespace SocialNetwork.Controllers
                 });
 
             return Ok(posts);
+        }
+
+        private int? GetUserId()
+        {
+            var sub = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (int.TryParse(sub, out var id))
+                return id;
+            return null;
         }
     }
 }

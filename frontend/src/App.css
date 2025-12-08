@@ -70,6 +70,21 @@ main {
   letter-spacing: 0.2px;
 }
 
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  margin: 0;
+  color: #475569;
+}
+
 .stack {
   display: flex;
   flex-direction: column;
@@ -82,11 +97,23 @@ main {
   gap: 8px;
 }
 
+.row.end {
+  justify-content: flex-end;
+}
+
 input {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid #cbd5e1;
   font-size: 15px;
+}
+
+textarea {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  font-size: 15px;
+  resize: vertical;
 }
 
 button {
@@ -135,10 +162,64 @@ button:disabled {
   background: #f8fafc;
 }
 
+.list-item.column {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.list-top {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
 .pill {
   padding: 6px 10px;
   border-radius: 12px;
   background: #e0e7ff;
   color: #1d4ed8;
   font-weight: 700;
+}
+
+.composer {
+  margin: 12px 0 18px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.post-message {
+  margin: 8px 0 0 0;
+  line-height: 1.6;
+}
+
+.user-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.user-card {
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.username {
+  margin: 0;
+  font-weight: 700;
+}
+
+.muted {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
 }
