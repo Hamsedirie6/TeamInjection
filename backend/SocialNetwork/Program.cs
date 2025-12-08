@@ -26,6 +26,16 @@ namespace SocialNetwork
             builder.Services.AddScoped<FollowService>();
             builder.Services.AddScoped<DirectMessageService>();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("Frontend", policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
          
             var jwtKey = builder.Configuration["Jwt:Key"] ?? "THIS_IS_A_DEMO_KEY_CHANGE_IT";
             var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
@@ -51,7 +61,12 @@ namespace SocialNetwork
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseHttpsRedirection();
+            }
+
+            app.UseCors("Frontend");
 
             app.UseAuthentication();   
             app.UseAuthorization();
