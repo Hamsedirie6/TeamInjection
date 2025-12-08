@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace SocialNetwork.DTO
-public class FollowRequest
 {
-    public int FollowedId { get; set; }
+    public class FollowRequest
+    {
+        public int FollowedId { get; set; }
+    }
 }

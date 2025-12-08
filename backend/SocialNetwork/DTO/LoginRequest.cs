@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace SocialNetwork.DTO
-public class LoginRequest
 {
-    public string Username { get; set; } = "";
-    public string Password { get; set; } = "";
+    public class LoginRequest
+    {
+        public string Username { get; set; } = "";
+        public string Password { get; set; } = "";
+    }
 }
