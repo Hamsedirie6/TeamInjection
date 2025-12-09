@@ -16,7 +16,10 @@ public class DirectMessageService
     public async Task<(bool Success, string ErrorMessage)> SendMessage(DirectMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.Message))
-            return (false, "Message cannot be empty");
+            throw new ArgumentException("Message cannot be empty", nameof(message.Message));
+
+        if (message.Message.Length > 500)
+            throw new ArgumentException("Message cannot exceed 500 characters", nameof(message.Message));
 
         var senderExists = await _context.Users.AnyAsync(u => u.Id == message.SenderId);
         var receiverExists = await _context.Users.AnyAsync(u => u.Id == message.ReceiverId);

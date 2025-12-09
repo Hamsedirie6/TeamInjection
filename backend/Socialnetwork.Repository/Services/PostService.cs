@@ -15,7 +15,10 @@ public class PostService
     public (bool Success, string ErrorMessage) CreatePost(Post post)
     {
         if (string.IsNullOrWhiteSpace(post.Message))
-            return (false, "Message is required");
+            throw new ArgumentException("Message is required", nameof(post.Message));
+
+        if (post.Message.Length > 500)
+            throw new ArgumentException("Message cannot exceed 500 characters", nameof(post.Message));
 
         post.CreatedAt = DateTime.UtcNow;
 
