@@ -56,34 +56,43 @@ export default function Timeline() {
   }, [userId, navigate]);
 
   return (
-    <div className="card">
-      <div className="card-header">
+    <section className="page timeline-page">
+      <header className="page-header">
         <div>
           <p className="eyebrow">Tidslinje</p>
-          <h1>Inlägg från personer du följer</h1>
+          <h1 className="page-title">Inlägg från personer du följer</h1>
+          <p className="page-subtitle">Se vad ditt nätverk delar just nu.</p>
         </div>
-        {username && <span className="pill">Inloggad som {username}</span>}
+        {username && <span className="pill subtle">Inloggad som {username}</span>}
+      </header>
+      {error && <p className="text-danger fw-semibold">{error}</p>}
+      <div className="card feed-card">
+        <div className="card-header">
+          <h2 className="card-title">Flöde</h2>
+        </div>
+        <div className="card-body">
+          <ul className="list">
+            {posts.map((p) => (
+              <li key={p.id} className="list-item column post-card-item">
+                <div className="list-top">
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="pill">{p.fromUsername || userMap[p.fromUserId] || p.fromUserId}</span>
+                    <small className="muted">
+                      {p.fromUsername || userMap[p.fromUserId] || p.fromUserId} →{" "}
+                      {p.toUsername || userMap[p.toUserId] || p.toUserId}
+                    </small>
+                  </div>
+                  <small className="muted">{new Date(p.createdAt).toLocaleString()}</small>
+                </div>
+                <p className="post-message">{p.message}</p>
+              </li>
+            ))}
+            {posts.length === 0 && (
+              <li className="list-item">Inga inlägg ännu från de du följer.</li>
+            )}
+          </ul>
+        </div>
       </div>
-      {error && <p className="error">{error}</p>}
-      <ul className="list">
-        {posts.map((p) => (
-          <li key={p.id} className="list-item column">
-            <div className="list-top">
-              <span className="pill">
-                {p.fromUsername || userMap[p.fromUserId] || p.fromUserId}
-              </span>
-              <small>
-                {p.fromUsername || userMap[p.fromUserId] || p.fromUserId} →{" "}
-                {p.toUsername || userMap[p.toUserId] || p.toUserId}
-              </small>
-            </div>
-            <p className="post-message">{p.message}</p>
-          </li>
-        ))}
-        {posts.length === 0 && (
-          <li className="list-item">Inga inlägg ännu från de du följer.</li>
-        )}
-      </ul>
-    </div>
+    </section>
   );
 }

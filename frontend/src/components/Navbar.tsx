@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -12,26 +12,40 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="nav">
+    <nav className="nav app-navbar">
       <div className="nav-left">
-        <Link to="/" className="brand">
+        <NavLink to="/" className="brand">
           Social
-        </Link>
-        <Link to="/">Mina inlgg</Link>
-        <Link to="/timeline">Tidslinje</Link>
-        <Link to="/dm">DM</Link>
-        <Link to="/follow">Flj</Link>
+        </NavLink>
+        <NavLink to="/posts" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+          Skapa inlägg
+        </NavLink>
+        <NavLink to="/timeline" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+          Tidslinje
+        </NavLink>
+        <NavLink to="/dm" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+          DM
+        </NavLink>
+        <NavLink to="/follow" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+          Följ
+        </NavLink>
       </div>
       <div className="nav-right">
         {username ? (
           <>
             <span className="user-chip">{username}</span>
-            <button onClick={handleLogout}>Logga ut</button>
+            <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
+              Logga ut
+            </button>
           </>
         ) : (
           <>
-            <Link to="/login">Logga in</Link>
-            <Link to="/register">Registrera</Link>
+            <NavLink to="/login" className="btn btn-outline-light btn-sm">
+              Logga in
+            </NavLink>
+            <NavLink to="/register" className="btn btn-primary btn-sm">
+              Registrera
+            </NavLink>
           </>
         )}
       </div>

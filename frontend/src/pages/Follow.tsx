@@ -123,63 +123,82 @@ export default function Follow() {
   };
 
   return (
-    <div className="card">
-      <div className="card-header">
+    <section className="page follow-page">
+      <header className="page-header">
         <div>
           <p className="eyebrow">Nätverk</p>
-          <h1>Följ användare</h1>
+          <h1 className="page-title">Utforska och följ användare</h1>
+          <p className="page-subtitle">Bygg ditt nätverk och hitta nya vänner.</p>
         </div>
         <input
+          className="search-input"
           placeholder="Sök användare..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-      </div>
+      </header>
 
-      {error && <p className="error">{error}</p>}
-      {message && <p className="success">{message}</p>}
+      {error && <p className="text-danger fw-semibold">{error}</p>}
+      {message && <p className="text-success fw-semibold">{message}</p>}
 
-      <div className="user-grid">
-        {visibleUsers.map((u) => (
-          <div key={u.id} className="user-card">
-            <div>
-              <p className="username">@{u.username}</p>
-              <p className="muted">ID: {u.id}</p>
-            </div>
-            <div className="row">
-              {following.includes(u.id) ? (
-                <button
-                  className="danger"
-                  onClick={() => unfollowUser(u.id, u.username)}
-                >
-                  Avfölj
-                </button>
-              ) : (
-                <button onClick={() => followUser(u.id, u.username)}>
-                  Följ
-                </button>
-              )}
-              <button onClick={() => loadFollowers(u.id)}>Följare</button>
-            </div>
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">Alla användare</h2>
+        </div>
+        <div className="card-body">
+          <div className="user-grid">
+            {visibleUsers.map((u) => (
+              <div key={u.id} className="user-card">
+                <div>
+                  <p className="username">@{u.username}</p>
+                  <p className="muted">ID: {u.id}</p>
+                </div>
+                <div className="row">
+                  {following.includes(u.id) ? (
+                    <button
+                      className="btn btn-outline-danger btn-sm"
+                      onClick={() => unfollowUser(u.id, u.username)}
+                    >
+                      Avfölj
+                    </button>
+                  ) : (
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => followUser(u.id, u.username)}
+                    >
+                      Följ
+                    </button>
+                  )}
+                  <button
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => loadFollowers(u.id)}
+                  >
+                    Följare
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
 
-      <div className="stack">
-        <h3>Jag följer</h3>
-        <p className="muted">
-          {following.length > 0
-            ? following.map((id) => `@${userMap[id] ?? id}`).join(", ")
-            : "Du följer ingen ännu."}
-        </p>
+      <div className="card">
+        <div className="card-body">
+          <h3>Jag följer</h3>
+          <p className="muted">
+            {following.length > 0
+              ? following.map((id) => `@${userMap[id] ?? id}`).join(", ")
+              : "Du följer ingen ännu."}
+          </p>
 
-        <h3>Mina vänner (följer varandra)</h3>
-        <p className="muted">
-          {friends.length > 0
-            ? friends.map((id) => `@${userMap[id] ?? id}`).join(", ")
-            : "Inga mutuals ännu."}
-        </p>
+          <h3>Mina vänner (följer varandra)</h3>
+          <p className="muted">
+            {friends.length > 0
+              ? friends.map((id) => `@${userMap[id] ?? id}`).join(", ")
+              : "Inga mutuals ännu."}
+          </p>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
