@@ -9,6 +9,7 @@ export default function Follow() {
   const [error, setError] = useState("");
   const [following, setFollowing] = useState<number[]>([]);
   const [friends, setFriends] = useState<number[]>([]);
+  const [followers, setFollowers] = useState<number[]>([]);
   const userMap = useMemo(() => toUserMap(users), [users]);
   const currentUserId = localStorage.getItem("userId");
 
@@ -52,17 +53,34 @@ export default function Follow() {
     }
   };
 
+  const loadMyFollowers = async (userId: number) => {
+    try {
+      const res = await api.get(`/follow/followers/${userId}`);
+      setFollowers(res.data.map((f: any) => f.followerId));
+    } catch (err: any) {
+      const msg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Kunde inte hämta följare";
+      setError(msg);
+    }
+  };
+
   useEffect(() => {
     loadUsers();
     if (currentUserId) {
-      loadFollowing(Number(currentUserId));
+      const id = Number(currentUserId);
+      loadFollowing(id);
       loadFriends();
+      loadMyFollowers(id);
     }
   }, [currentUserId]);
 
-  const visibleUsers = users.filter((u) =>
-    u.username.toLowerCase().includes(search.trim().toLowerCase())
-  );
+  const visibleUsers = users.filter((u) => {
+    const matches = u.username.toLowerCase().includes(search.trim().toLowerCase());
+    const isSelf = currentUserId ? Number(currentUserId) === u.id : false;
+    return matches && !isSelf;
+  });
 
   const followUser = async (userId: number, username: string) => {
     setError("");
@@ -71,8 +89,10 @@ export default function Follow() {
       await api.post("/follow", { followedId: userId });
       setMessage(`Du följer nu ${username}`);
       if (currentUserId) {
-        loadFollowing(Number(currentUserId));
+        const id = Number(currentUserId);
+        loadFollowing(id);
         loadFriends();
+        loadMyFollowers(id);
       }
     } catch (err: any) {
       const msg =
@@ -90,34 +110,16 @@ export default function Follow() {
       await api.delete(`/follow/${userId}`);
       setMessage(`Du slutade följa ${username}`);
       if (currentUserId) {
-        loadFollowing(Number(currentUserId));
+        const id = Number(currentUserId);
+        loadFollowing(id);
         loadFriends();
+        loadMyFollowers(id);
       }
     } catch (err: any) {
       const msg =
         err.response?.data?.error ||
         err.response?.data?.message ||
         "Kunde inte avfölja användare";
-      setError(msg);
-    }
-  };
-
-  const loadFollowers = async (userId: number) => {
-    try {
-      const res = await api.get(`/follow/followers/${userId}`);
-      const followerNames = res.data
-        .map((f: any) => userMap[f.followerId] ?? f.followerId)
-        .join(", ");
-      setMessage(
-        followerNames
-          ? `${userMap[userId] ?? userId} har följare: ${followerNames}`
-          : `${userMap[userId] ?? userId} har inga följare ännu`
-      );
-    } catch (err: any) {
-      const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        "Kunde inte hämta följare";
       setError(msg);
     }
   };
@@ -141,62 +143,96 @@ export default function Follow() {
       {error && <p className="text-danger fw-semibold">{error}</p>}
       {message && <p className="text-success fw-semibold">{message}</p>}
 
-      <div className="card">
-        <div className="card-header">
-          <h2 className="card-title">Alla användare</h2>
-        </div>
-        <div className="card-body">
-          <div className="user-grid">
-            {visibleUsers.map((u) => (
-              <div key={u.id} className="user-card">
-                <div>
-                  <p className="username">@{u.username}</p>
-                  <p className="muted">ID: {u.id}</p>
-                </div>
-                <div className="row">
-                  {following.includes(u.id) ? (
-                    <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => unfollowUser(u.id, u.username)}
-                    >
-                      Avfölj
-                    </button>
-                  ) : (
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={() => followUser(u.id, u.username)}
-                    >
-                      Följ
-                    </button>
-                  )}
-                  <button
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={() => loadFollowers(u.id)}
-                  >
-                    Följare
-                  </button>
-                </div>
-              </div>
-            ))}
+      <div className="follow-grid four-cols">
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">Mina följare</h2>
+          </div>
+          <div className="card-body scroll-area">
+            <ul className="list">
+              {followers.length > 0 ? (
+                followers.map((id) => (
+                  <li key={id} className="list-item">
+                    <span className="pill">@{userMap[id] ?? id}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="list-item">Inga följare ännu.</li>
+              )}
+            </ul>
           </div>
         </div>
-      </div>
 
-      <div className="card">
-        <div className="card-body">
-          <h3>Jag följer</h3>
-          <p className="muted">
-            {following.length > 0
-              ? following.map((id) => `@${userMap[id] ?? id}`).join(", ")
-              : "Du följer ingen ännu."}
-          </p>
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">Jag följer</h2>
+          </div>
+          <div className="card-body scroll-area">
+            <ul className="list">
+              {following.length > 0 ? (
+                following.map((id) => (
+                  <li key={id} className="list-item">
+                    <span className="pill">@{userMap[id] ?? id}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="list-item">Du följer ingen ännu.</li>
+              )}
+            </ul>
+          </div>
+        </div>
 
-          <h3>Mina vänner (följer varandra)</h3>
-          <p className="muted">
-            {friends.length > 0
-              ? friends.map((id) => `@${userMap[id] ?? id}`).join(", ")
-              : "Inga mutuals ännu."}
-          </p>
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">Gemensamma vänner</h2>
+          </div>
+          <div className="card-body scroll-area">
+            <ul className="list">
+              {friends.length > 0 ? (
+                friends.map((id) => (
+                  <li key={id} className="list-item">
+                    <span className="pill">@{userMap[id] ?? id}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="list-item">Inga mutuals ännu.</li>
+              )}
+            </ul>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">Alla användare</h2>
+          </div>
+          <div className="card-body scroll-area">
+            <div className="user-grid">
+              {visibleUsers.map((u) => (
+                <div key={u.id} className="user-card">
+                  <div>
+                    <p className="username">@{u.username}</p>
+                  </div>
+                  <div className="row">
+                    {following.includes(u.id) ? (
+                      <button
+                        className="btn btn-outline-danger btn-sm"
+                        onClick={() => unfollowUser(u.id, u.username)}
+                      >
+                        Avfölj
+                      </button>
+                    ) : (
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => followUser(u.id, u.username)}
+                      >
+                        Följ
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
