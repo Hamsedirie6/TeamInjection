@@ -58,4 +58,19 @@ public class PostService
     {
         return _context.Posts.ToList();
     }
+
+    public (bool Success, string ErrorMessage) DeletePost(int postId, int userId)
+    {
+        var post = _context.Posts.FirstOrDefault(p => p.Id == postId);
+        if (post == null)
+            return (false, "Post not found");
+
+        if (post.FromUserId != userId)
+            return (false, "Not allowed to delete this post");
+
+        _context.Posts.Remove(post);
+        _context.SaveChanges();
+
+        return (true, "");
+    }
 }

@@ -27,4 +27,34 @@ public class FollowService
     {
         return _context.Follows.Where(f => f.FollowedId == userId).ToList();
     }
+
+    public IEnumerable<Follow> GetFollowing(int userId)
+    {
+        return _context.Follows.Where(f => f.FollowerId == userId).ToList();
+    }
+
+    public IEnumerable<int> GetFriends(int userId)
+    {
+        var followingIds = _context.Follows
+            .Where(f => f.FollowerId == userId)
+            .Select(f => f.FollowedId);
+
+        var followerIds = _context.Follows
+            .Where(f => f.FollowedId == userId)
+            .Select(f => f.FollowerId);
+
+        return followingIds.Intersect(followerIds).ToList();
+    }
+
+    public (bool Success, string ErrorMessage) RemoveFollow(int followerId, int followedId)
+    {
+        var follow = _context.Follows.FirstOrDefault(f => f.FollowerId == followerId && f.FollowedId == followedId);
+        if (follow == null)
+            return (false, "Follow relation not found");
+
+        _context.Follows.Remove(follow);
+        _context.SaveChanges();
+
+        return (true, "");
+    }
 }

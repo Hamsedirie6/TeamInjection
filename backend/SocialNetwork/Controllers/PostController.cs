@@ -5,6 +5,7 @@ using SocialNetwork.Entity.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Socialnetwork.Entityframework;
 
 namespace SocialNetwork.Controllers
 {
@@ -13,10 +14,12 @@ namespace SocialNetwork.Controllers
     public class PostController : ControllerBase
     {
         private readonly PostService _service;
+        private readonly AppDbContext _context;
 
-        public PostController(PostService service)
+        public PostController(PostService service, AppDbContext context)
         {
             _service = service;
+            _context = context;
         }
         [Authorize]
         [HttpPost]
@@ -38,16 +41,7 @@ namespace SocialNetwork.Controllers
             if (!result.Success)
                 return BadRequest(new { error = result.ErrorMessage });
 
-            var response = new PostResponse
-            {
-                Id = post.Id,
-                FromUserId = post.FromUserId,
-                ToUserId = post.ToUserId,
-                Message = post.Message,
-                CreatedAt = post.CreatedAt
-            };
-
-            return Ok(response);
+            return Ok(MapPost(post));
         }
 
         [HttpGet("{id}")]
@@ -56,28 +50,14 @@ namespace SocialNetwork.Controllers
             var post = _service.GetById(id);
             if (post == null) return NotFound();
 
-            return Ok(new PostResponse
-            {
-                Id = post.Id,
-                FromUserId = post.FromUserId,
-                ToUserId = post.ToUserId,
-                Message = post.Message,
-                CreatedAt = post.CreatedAt
-            });
+            return Ok(MapPost(post));
         }
 
         [HttpGet("user/{userId}")]
         public IActionResult GetByUser(int userId)
         {
             var posts = _service.GetByUser(userId)
-                .Select(p => new PostResponse
-                {
-                    Id = p.Id,
-                    FromUserId = p.FromUserId,
-                    ToUserId = p.ToUserId,
-                    Message = p.Message,
-                    CreatedAt = p.CreatedAt
-                });
+                .Select(MapPost);
 
             return Ok(posts);
         }
@@ -91,14 +71,7 @@ namespace SocialNetwork.Controllers
                 return Unauthorized();
 
             var posts = _service.GetTimeline(userId.Value)
-                .Select(p => new PostResponse
-                {
-                    Id = p.Id,
-                    FromUserId = p.FromUserId,
-                    ToUserId = p.ToUserId,
-                    Message = p.Message,
-                    CreatedAt = p.CreatedAt
-                });
+                .Select(MapPost);
 
             return Ok(posts);
         }
@@ -107,16 +80,27 @@ namespace SocialNetwork.Controllers
         public IActionResult GetAll()
         {
             var posts = _service.GetAll()
-                .Select(p => new PostResponse
-                {
-                    Id = p.Id,
-                    FromUserId = p.FromUserId,
-                    ToUserId = p.ToUserId,
-                    Message = p.Message,
-                    CreatedAt = p.CreatedAt
-                });
+                .Select(MapPost);
 
             return Ok(posts);
+        }
+
+        [Authorize]
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var userId = GetUserId();
+            if (userId == null)
+                return Unauthorized();
+
+            var result = _service.DeletePost(id, userId.Value);
+            if (!result.Success)
+            {
+                if (result.ErrorMessage == "Post not found") return NotFound(new { error = result.ErrorMessage });
+                return Forbid();
+            }
+
+            return NoContent();
         }
 
         private int? GetUserId()
@@ -126,6 +110,23 @@ namespace SocialNetwork.Controllers
             if (int.TryParse(sub, out var id))
                 return id;
             return null;
+        }
+
+        private PostResponse MapPost(Post post)
+        {
+            var fromUsername = _context.Users.FirstOrDefault(u => u.Id == post.FromUserId)?.Username;
+            var toUsername = _context.Users.FirstOrDefault(u => u.Id == post.ToUserId)?.Username;
+
+            return new PostResponse
+            {
+                Id = post.Id,
+                FromUserId = post.FromUserId,
+                ToUserId = post.ToUserId,
+                FromUsername = fromUsername,
+                ToUsername = toUsername,
+                Message = post.Message,
+                CreatedAt = post.CreatedAt
+            };
         }
     }
 }

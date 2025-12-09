@@ -59,6 +59,50 @@ namespace SocialNetwork.Controllers
             return Ok(list);
         }
 
+        [HttpGet("following/{userId}")]
+        public IActionResult GetFollowing(int userId)
+        {
+            var list = _service.GetFollowing(userId)
+                .Select(f => new FollowResponse
+                {
+                    Id = f.Id,
+                    FollowerId = f.FollowerId,
+                    FollowedId = f.FollowedId
+                });
+
+            return Ok(list);
+        }
+
+        [Authorize]
+        [HttpGet("friends")]
+        public IActionResult GetFriends()
+        {
+            var userId = GetUserId();
+            if (userId == null)
+                return Unauthorized();
+
+            var friendIds = _service.GetFriends(userId.Value);
+            return Ok(friendIds);
+        }
+
+        [Authorize]
+        [HttpDelete("{followedId}")]
+        public IActionResult Unfollow(int followedId)
+        {
+            var followerId = GetUserId();
+            if (followerId == null)
+                return Unauthorized();
+
+            var result = _service.RemoveFollow(followerId.Value, followedId);
+            if (!result.Success)
+            {
+                if (result.ErrorMessage == "Follow relation not found") return NotFound(new { error = result.ErrorMessage });
+                return BadRequest(new { error = result.ErrorMessage });
+            }
+
+            return NoContent();
+        }
+
         private int? GetUserId()
         {
             var sub = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??

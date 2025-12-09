@@ -8,6 +8,8 @@ type Post = {
   message: string;
   fromUserId: number;
   toUserId: number;
+  fromUsername?: string;
+  toUsername?: string;
 };
 
 export default function Posts() {
@@ -33,7 +35,7 @@ export default function Posts() {
   const loadPosts = async () => {
     if (!userId) return;
     try {
-      const res = await api.get(`/post/user/${userId}`);
+      const res = await api.get("/post/timeline");
       setPosts(res.data);
     } catch (err: any) {
       const msg =
@@ -54,8 +56,6 @@ export default function Posts() {
     try {
       await api.post("/post", {
         message,
-        fromUserId: Number(userId),
-        toUserId: Number(userId),
       });
       setMessage("");
       await loadPosts();
@@ -64,6 +64,21 @@ export default function Posts() {
         err.response?.data?.error ||
         err.response?.data?.message ||
         "Kunde inte skapa inlägg";
+      setError(msg);
+    }
+  };
+
+  const deletePost = async (postId: number) => {
+    if (!userId) return;
+    setError("");
+    try {
+      await api.delete(`/post/${postId}`);
+      await loadPosts();
+    } catch (err: any) {
+      const msg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        "Kunde inte radera inlägg";
       setError(msg);
     }
   };
@@ -102,11 +117,21 @@ export default function Posts() {
         {posts.map((p) => (
           <li key={p.id} className="list-item column">
             <div className="list-top">
-              <span className="pill">#{p.id}</span>
+              <span className="pill">
+                {p.fromUsername || userMap[p.fromUserId] || p.fromUserId}
+              </span>
               <small>
-                {userMap[p.fromUserId] ?? p.fromUserId} →{" "}
-                {userMap[p.toUserId] ?? p.toUserId}
+                {p.fromUsername || userMap[p.fromUserId] || p.fromUserId} →{" "}
+                {p.toUsername || userMap[p.toUserId] || p.toUserId}
               </small>
+              {String(p.fromUserId) === userId && (
+                <button
+                  className="danger small"
+                  onClick={() => deletePost(p.id)}
+                >
+                  Radera
+                </button>
+              )}
             </div>
             <p className="post-message">{p.message}</p>
           </li>
