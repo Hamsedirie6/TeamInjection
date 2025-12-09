@@ -8,6 +8,8 @@ type Post = {
   message: string;
   fromUserId: number;
   toUserId: number;
+  fromUsername?: string;
+  toUsername?: string;
   createdAt: string;
 };
 
@@ -67,10 +69,12 @@ export default function Timeline() {
         {posts.map((p) => (
           <li key={p.id} className="list-item column">
             <div className="list-top">
-              <span className="pill">#{p.id}</span>
+              <span className="pill">
+                {p.fromUsername || userMap[p.fromUserId] || p.fromUserId}
+              </span>
               <small>
-                {userMap[p.fromUserId] ?? p.fromUserId} →{" "}
-                {userMap[p.toUserId] ?? p.toUserId}
+                {p.fromUsername || userMap[p.fromUserId] || p.fromUserId} →{" "}
+                {p.toUsername || userMap[p.toUserId] || p.toUserId}
               </small>
             </div>
             <p className="post-message">{p.message}</p>
