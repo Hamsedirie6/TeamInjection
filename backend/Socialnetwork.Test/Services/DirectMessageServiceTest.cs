@@ -1,3 +1,4 @@
+using System;
 using SocialNetwork.Services;
 using SocialNetwork.Entity.Models;
 using SocialNetwork.Test.Factories;
@@ -13,10 +14,7 @@ public class DirectMessageServiceTests
         using var context = AppDbContextInMemoryFactory.Create();
         var service = new DirectMessageService(context);
 
-        var result = service.SendMessage(new DirectMessage { Message = "" });
-
-        Assert.False(result.Success);
-        Assert.Equal("Message cannot be empty", result.ErrorMessage);
+        Assert.Throws<ArgumentException>(() => service.SendMessage(new DirectMessage { Message = "" }));
     }
 
     [Fact]
@@ -41,5 +39,15 @@ public class DirectMessageServiceTests
         service.SendMessage(msg);
 
         Assert.True(msg.SentAt != default);
+    }
+
+    [Fact]
+    public void SendMessage_ShouldFail_WhenMessageTooLong()
+    {
+        using var context = AppDbContextInMemoryFactory.Create();
+        var service = new DirectMessageService(context);
+        var longMessage = new string('a', 501);
+
+        Assert.Throws<ArgumentException>(() => service.SendMessage(new DirectMessage { Message = longMessage, SenderId = 1, ReceiverId = 2 }));
     }
 }

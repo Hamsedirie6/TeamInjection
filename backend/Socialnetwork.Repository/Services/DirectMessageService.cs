@@ -15,7 +15,10 @@ public class DirectMessageService
     public (bool Success, string ErrorMessage) SendMessage(DirectMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.Message))
-            return (false, "Message cannot be empty");
+            throw new ArgumentException("Message cannot be empty", nameof(message.Message));
+
+        if (message.Message.Length > 500)
+            throw new ArgumentException("Message cannot exceed 500 characters", nameof(message.Message));
 
         message.SentAt = DateTime.UtcNow;
 
