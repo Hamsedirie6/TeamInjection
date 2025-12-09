@@ -17,9 +17,6 @@ public class PostService
         if (string.IsNullOrWhiteSpace(post.Message))
             throw new ArgumentException("Message is required", nameof(post.Message));
 
-        if (post.Message.Length > 500)
-            throw new ArgumentException("Message cannot exceed 500 characters", nameof(post.Message));
-        throw new ArgumentException("Message is required");
 
         if (post.Message.Length > 500)
             throw new ArgumentException("Message cannot exceed 500 characters");

@@ -39,15 +39,13 @@ namespace SocialNetwork.Controllers
 
             try
             {
-                var result = _service.SendMessage(msg);
+                var result = await _service.SendMessage(msg);
 
-                // Om du i framtiden vill att service ska kunna returnera andra fel
                 if (!result.Success)
                     return BadRequest(new { error = result.ErrorMessage });
             }
             catch (ArgumentException ex)
             {
-                // Valideringsfel (t.ex. > 500 tecken)
                 return BadRequest(new { error = ex.Message });
             }
 
@@ -197,7 +195,7 @@ namespace SocialNetwork.Controllers
             }
             catch (OperationCanceledException)
             {
-                // Client disconnected or request cancelled.
+
             }
         }
 
