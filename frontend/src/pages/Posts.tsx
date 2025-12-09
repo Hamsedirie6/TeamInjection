@@ -100,7 +100,6 @@ export default function Posts() {
           <h1 className="page-title">Mina inlägg</h1>
           <p className="page-subtitle">Dela något nytt och håll koll på ditt flöde.</p>
         </div>
-        {username && <span className="pill subtle">Inloggad som {username}</span>}
       </header>
 
       {error && <p className="text-danger fw-semibold">{error}</p>}
@@ -136,14 +135,10 @@ export default function Posts() {
                 <div className="list-top">
                   <div className="d-flex align-items-center gap-2">
                     <span className="pill">{p.fromUsername || userMap[p.fromUserId] || p.fromUserId}</span>
-                    <small className="muted">
-                      {p.fromUsername || userMap[p.fromUserId] || p.fromUserId} →{" "}
-                      {p.toUsername || userMap[p.toUserId] || p.toUserId}
-                    </small>
                   </div>
                   {String(p.fromUserId) === userId && (
                     <button
-                      className="btn btn-outline-danger btn-sm"
+                      className="btn btn-delete btn-sm"
                       onClick={() => deletePost(p.id)}
                     >
                       Radera

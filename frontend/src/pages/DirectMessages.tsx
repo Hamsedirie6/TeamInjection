@@ -206,61 +206,37 @@ export default function DirectMessages() {
 
       {error && <p className="text-danger fw-semibold">{error}</p>}
 
-      <div className="grid two-cols gap">
-        <div className="stack">
-          <div className="card">
-            <div className="section-heading">
-              <h3>Konversationer</h3>
-              <span className="badge-soft">Trådar</span>
-            </div>
-            <ul className="list">
-              {threads.map((t) => (
-                <li
-                  key={t.otherUserId}
-                  className="list-item clickable"
-                  onClick={() => selectThread(t.otherUserId)}
-                >
-                  <div className="list-top">
-                    <strong>{userMap[t.otherUserId] ?? t.otherUserId}</strong>
-                    <small>{new Date(t.lastMessage.sentAt).toLocaleString()}</small>
-                  </div>
-                  <p className="muted">{t.lastMessage.message}</p>
-                </li>
-              ))}
-              {threads.length === 0 && (
-                <li className="list-item">Inga konversationer än.</li>
-              )}
-            </ul>
+      <div className="grid dm-grid gap">
+        <div className="card">
+          <div className="section-heading">
+            <h3>Konversationer</h3>
+            <span className="badge-soft">Trådar</span>
           </div>
-
-          <div className="card">
-            <div className="section-heading">
-              <h3>Notifieringar</h3>
-              <span className="badge-soft">Nytt</span>
-            </div>
-            <ul className="list">
-              {unread.map((m) => (
-                <li key={m.id} className="list-item">
-                  <div className="list-top">
-                    <span className="pill">Från {userMap[m.senderId] ?? m.senderId}</span>
-                    <small>{new Date(m.sentAt).toLocaleTimeString()}</small>
-                  </div>
-                  <p className="muted">{m.message}</p>
-                </li>
-              ))}
-              {unread.length === 0 && (
-                <li className="list-item">Inga nya meddelanden.</li>
-              )}
-            </ul>
-          </div>
+          <ul className="list">
+            {threads.map((t) => (
+              <li
+                key={t.otherUserId}
+                className="list-item clickable"
+                onClick={() => selectThread(t.otherUserId)}
+              >
+                <div className="list-top">
+                  <strong>{userMap[t.otherUserId] ?? t.otherUserId}</strong>
+                  <small>{new Date(t.lastMessage.sentAt).toLocaleString()}</small>
+                </div>
+                <p className="muted">{t.lastMessage.message}</p>
+              </li>
+            ))}
+            {threads.length === 0 && (
+              <li className="list-item">Inga konversationer än.</li>
+            )}
+          </ul>
         </div>
 
-        <div className="stack">
-          <div className="card">
-            <div className="section-heading">
-              <h3>Aktiv chatt</h3>
-              <span className="badge-soft">Skicka</span>
-            </div>
+        <div className="card">
+          <div className="section-heading">
+            <h3>Aktiv chatt</h3>
+          </div>
+          <div className="stack">
             <input
               placeholder="Mottares användarnamn"
               value={receiverUsername}
@@ -281,37 +257,58 @@ export default function DirectMessages() {
               Skicka
             </button>
           </div>
+        </div>
 
-          <div className="card">
-            <div className="section-heading">
-              <h3>Historik</h3>
-            </div>
-            <ul className="list">
-              {conversation.map((m) => (
-                <li key={m.id} className="list-item">
-                  <div className="list-top">
-                    <span className="pill">
-                      {userMap[m.senderId] ?? m.senderId} →{" "}
-                      {userMap[m.receiverId] ?? m.receiverId}
-                    </span>
-                    <small>{new Date(m.sentAt).toLocaleTimeString()}</small>
-                    {String(m.senderId) === senderId && (
-                      <button
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => deleteMessage(m.id)}
-                      >
-                        Radera
-                      </button>
-                    )}
-                  </div>
-                  <p>{m.message}</p>
-                </li>
-              ))}
-              {conversation.length === 0 && (
-                <li className="list-item">Ingen konversation vald.</li>
-              )}
-            </ul>
+        <div className="card">
+          <div className="section-heading">
+            <h3>Notifieringar</h3>
+            <span className="badge-soft">Nytt</span>
           </div>
+          <ul className="list">
+            {unread.map((m) => (
+              <li key={m.id} className="list-item">
+                <div className="list-top">
+                  <span className="pill">Från {userMap[m.senderId] ?? m.senderId}</span>
+                  <small>{new Date(m.sentAt).toLocaleTimeString()}</small>
+                </div>
+                <p className="muted">{m.message}</p>
+              </li>
+            ))}
+            {unread.length === 0 && (
+              <li className="list-item">Inga nya meddelanden.</li>
+            )}
+          </ul>
+        </div>
+
+        <div className="card">
+          <div className="section-heading">
+            <h3>Historik</h3>
+          </div>
+          <ul className="list">
+            {conversation.map((m) => (
+              <li key={m.id} className="list-item">
+                <div className="list-top">
+                  <span className="pill">
+                    {userMap[m.senderId] ?? m.senderId} →{" "}
+                    {userMap[m.receiverId] ?? m.receiverId}
+                  </span>
+                  <small>{new Date(m.sentAt).toLocaleTimeString()}</small>
+                  {String(m.senderId) === senderId && (
+                    <button
+                      className="btn btn-delete btn-sm"
+                      onClick={() => deleteMessage(m.id)}
+                    >
+                      Radera
+                    </button>
+                  )}
+                </div>
+                <p>{m.message}</p>
+              </li>
+            ))}
+            {conversation.length === 0 && (
+              <li className="list-item">Ingen konversation vald.</li>
+            )}
+          </ul>
         </div>
       </div>
     </section>

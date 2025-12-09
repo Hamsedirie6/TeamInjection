@@ -63,7 +63,6 @@ export default function Timeline() {
           <h1 className="page-title">Inlägg från personer du följer</h1>
           <p className="page-subtitle">Se vad ditt nätverk delar just nu.</p>
         </div>
-        {username && <span className="pill subtle">Inloggad som {username}</span>}
       </header>
       {error && <p className="text-danger fw-semibold">{error}</p>}
       <div className="card feed-card">
@@ -77,10 +76,6 @@ export default function Timeline() {
                 <div className="list-top">
                   <div className="d-flex align-items-center gap-2">
                     <span className="pill">{p.fromUsername || userMap[p.fromUserId] || p.fromUserId}</span>
-                    <small className="muted">
-                      {p.fromUsername || userMap[p.fromUserId] || p.fromUserId} →{" "}
-                      {p.toUsername || userMap[p.toUserId] || p.toUserId}
-                    </small>
                   </div>
                   <small className="muted">{new Date(p.createdAt).toLocaleString()}</small>
                 </div>
