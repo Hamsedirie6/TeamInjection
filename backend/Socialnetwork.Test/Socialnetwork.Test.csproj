@@ -7,6 +7,10 @@
 
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,8 +27,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SocialNetwork.Entity\SocialNetwork.Entity.csproj" />
-    <ProjectReference Include="..\Socialnetwork.Entityframework\Socialnetwork.Entityframework.csproj" />
-    <ProjectReference Include="..\Socialnetwork.Repository\Socialnetwork.Repository.csproj" />
+    <ProjectReference Include="..\SocialNetwork.Entityframework\SocialNetwork.Entityframework.csproj" />
+    <ProjectReference Include="..\SocialNetwork.Repository\SocialNetwork.Repository.csproj" />
     <ProjectReference Include="..\SocialNetwork\SocialNetwork.Api.csproj" />
   </ItemGroup>
 
