@@ -17,10 +17,8 @@ public class DirectMessageServiceTests
         context.SaveChanges();
         var service = new DirectMessageService(context);
 
-        var result = await service.SendMessage(new DirectMessage { Message = "", SenderId = 1, ReceiverId = 2 });
-
-        Assert.False(result.Success);
-        Assert.Equal("Message cannot be empty", result.ErrorMessage);
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            service.SendMessage(new DirectMessage { Message = "", SenderId = 1, ReceiverId = 2 }));
     }
 
     [Fact]
@@ -59,5 +57,18 @@ public class DirectMessageServiceTests
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             service.SendMessage(new DirectMessage { Message = "Hello", SenderId = 1, ReceiverId = 2 }));
+    }
+
+    [Fact]
+    public async Task SendMessage_ShouldFail_WhenMessageTooLong()
+    {
+        using var context = AppDbContextInMemoryFactory.Create();
+        context.Users.AddRange(new User { Id = 1, Username = "u1" }, new User { Id = 2, Username = "u2" });
+        context.SaveChanges();
+        var service = new DirectMessageService(context);
+        var longMessage = new string('a', 501);
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            service.SendMessage(new DirectMessage { Message = longMessage, SenderId = 1, ReceiverId = 2 }));
     }
 }
