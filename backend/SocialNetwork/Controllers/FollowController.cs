@@ -5,6 +5,7 @@ using SocialNetwork.Entity.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialNetwork.Controllers
 {
@@ -20,7 +21,7 @@ namespace SocialNetwork.Controllers
         }
         [Authorize]
         [HttpPost]
-        public IActionResult Follow([FromBody] FollowRequest request)
+        public async Task<IActionResult> Follow([FromBody] FollowRequest request)
         {
             var followerId = GetUserId();
             if (followerId == null)
@@ -32,7 +33,7 @@ namespace SocialNetwork.Controllers
                 FollowedId = request.FollowedId
             };
 
-            var result = _service.AddFollow(follow);
+            var result = await _service.AddFollow(follow);
 
             if (!result.Success)
                 return BadRequest(new { error = result.ErrorMessage });
@@ -87,7 +88,7 @@ namespace SocialNetwork.Controllers
 
         [Authorize]
         [HttpDelete("{followedId}")]
-        public IActionResult Unfollow(int followedId)
+        public async Task<IActionResult> Unfollow(int followedId)
         {
             var followerId = GetUserId();
             if (followerId == null)
