@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Socialnetwork.Entityframework;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialNetwork.Controllers
 {
@@ -23,11 +24,17 @@ namespace SocialNetwork.Controllers
         }
         [Authorize]
         [HttpPost]
-        public IActionResult Create([FromBody] CreatePostRequest request)
+        public async Task<IActionResult> Create([FromBody] CreatePostRequest request)
         {
             var userId = GetUserId();
             if (userId == null)
                 return Unauthorized();
+
+            if (!await _context.Users.AnyAsync(u => u.Id == userId.Value))
+                return BadRequest(new { error = "Användaren i token finns inte." });
+
+            if (request.ToUserId != 0 && !await _context.Users.AnyAsync(u => u.Id == request.ToUserId))
+                return BadRequest(new { error = "Mottagaranvändaren finns inte." });
 
             var post = new Post
             {

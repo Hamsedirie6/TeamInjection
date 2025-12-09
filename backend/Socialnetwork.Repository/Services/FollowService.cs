@@ -1,5 +1,6 @@
 using SocialNetwork.Entity.Models;
 using Socialnetwork.Entityframework;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialNetwork.Services;
 
@@ -12,10 +13,15 @@ public class FollowService
         _context = context;
     }
 
-    public (bool Success, string ErrorMessage) AddFollow(Follow follow)
+    public async Task<(bool Success, string ErrorMessage)> AddFollow(Follow follow)
     {
         if (follow.FollowerId == follow.FollowedId)
             return (false, "User cannot follow themselves");
+
+        var followerExists = await _context.Users.AnyAsync(u => u.Id == follow.FollowerId);
+        var followedExists = await _context.Users.AnyAsync(u => u.Id == follow.FollowedId);
+        if (!followerExists || !followedExists)
+            return (false, "User not found");
 
         _context.Follows.Add(follow);
         _context.SaveChanges();
