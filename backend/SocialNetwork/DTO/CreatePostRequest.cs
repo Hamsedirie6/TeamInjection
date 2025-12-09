@@ -10,7 +10,7 @@ namespace SocialNetwork.DTO
     public class CreatePostRequest
     {
         public int ToUserId { get; set; }
-        [MaxLength(500)]
+
 
         [MaxLength(500)]
         public string Message { get; set; } = "";
