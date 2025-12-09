@@ -1,5 +1,6 @@
 using SocialNetwork.Entity.Models;
 using Socialnetwork.Entityframework;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialNetwork.Services;
 
@@ -12,10 +13,15 @@ public class DirectMessageService
         _context = context;
     }
 
-    public (bool Success, string ErrorMessage) SendMessage(DirectMessage message)
+    public async Task<(bool Success, string ErrorMessage)> SendMessage(DirectMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.Message))
             return (false, "Message cannot be empty");
+
+        var senderExists = await _context.Users.AnyAsync(u => u.Id == message.SenderId);
+        var receiverExists = await _context.Users.AnyAsync(u => u.Id == message.ReceiverId);
+        if (!senderExists || !receiverExists)
+            throw new ArgumentException("Sender or receiver does not exist");
 
         message.SentAt = DateTime.UtcNow;
 
