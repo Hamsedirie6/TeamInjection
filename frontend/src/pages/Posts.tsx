@@ -93,50 +93,69 @@ export default function Posts() {
   }, [userId]);
 
   return (
-    <div className="card">
-      <div className="card-header">
+    <section className="page posts-page">
+      <header className="page-header">
         <div>
           <p className="eyebrow">Flöde</p>
-          <h1>Mina inlägg</h1>
+          <h1 className="page-title">Mina inlägg</h1>
+          <p className="page-subtitle">Dela något nytt och håll koll på ditt flöde.</p>
         </div>
-        {username && <span className="pill">Inloggad som {username}</span>}
-      </div>
-      {error && <p className="error">{error}</p>}
-      <div className="composer">
-        <textarea
-          placeholder="Vad vill du dela?"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          rows={3}
-        />
-        <div className="row end">
-          <button onClick={createPost}>Publicera</button>
+        {username && <span className="pill subtle">Inloggad som {username}</span>}
+      </header>
+
+      {error && <p className="text-danger fw-semibold">{error}</p>}
+
+      <div className="card composer-card">
+        <div className="card-header">
+          <h2 className="card-title">Skriv ett inlägg</h2>
+        </div>
+        <div className="card-body">
+          <textarea
+            placeholder="Vad vill du dela?"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            rows={4}
+            className="w-100"
+          />
+          <div className="row end mt-2">
+            <button className="btn btn-primary" onClick={createPost}>
+              Publicera
+            </button>
+          </div>
         </div>
       </div>
-      <ul className="list">
-        {posts.map((p) => (
-          <li key={p.id} className="list-item column">
-            <div className="list-top">
-              <span className="pill">
-                {p.fromUsername || userMap[p.fromUserId] || p.fromUserId}
-              </span>
-              <small>
-                {p.fromUsername || userMap[p.fromUserId] || p.fromUserId} →{" "}
-                {p.toUsername || userMap[p.toUserId] || p.toUserId}
-              </small>
-              {String(p.fromUserId) === userId && (
-                <button
-                  className="danger small"
-                  onClick={() => deletePost(p.id)}
-                >
-                  Radera
-                </button>
-              )}
-            </div>
-            <p className="post-message">{p.message}</p>
-          </li>
-        ))}
-      </ul>
-    </div>
+
+      <div className="card feed-card">
+        <div className="card-header">
+          <h2 className="card-title">Dina inlägg</h2>
+        </div>
+        <div className="card-body">
+          <ul className="list">
+            {posts.map((p) => (
+              <li key={p.id} className="list-item column post-card-item">
+                <div className="list-top">
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="pill">{p.fromUsername || userMap[p.fromUserId] || p.fromUserId}</span>
+                    <small className="muted">
+                      {p.fromUsername || userMap[p.fromUserId] || p.fromUserId} →{" "}
+                      {p.toUsername || userMap[p.toUserId] || p.toUserId}
+                    </small>
+                  </div>
+                  {String(p.fromUserId) === userId && (
+                    <button
+                      className="btn btn-outline-danger btn-sm"
+                      onClick={() => deletePost(p.id)}
+                    >
+                      Radera
+                    </button>
+                  )}
+                </div>
+                <p className="post-message">{p.message}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
   );
 }

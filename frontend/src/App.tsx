@@ -13,9 +13,10 @@ function App() {
     <BrowserRouter>
       <div className="app-shell">
         <Navbar />
-        <main>
+        <main className="container py-4">
           <Routes>
-            <Route path="/" element={<Posts />} />
+            <Route path="/" element={<Login />} />
+            <Route path="/posts" element={<Posts />} />
             <Route path="/timeline" element={<Timeline />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
