@@ -1,5 +1,6 @@
 using SocialNetwork.Entity.Models;
 using Socialnetwork.Entityframework;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialNetwork.Services;
 
@@ -12,10 +13,19 @@ public class DirectMessageService
         _context = context;
     }
 
-    public (bool Success, string ErrorMessage) SendMessage(DirectMessage message)
+    public async Task<(bool Success, string ErrorMessage)> SendMessage(DirectMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.Message))
-            throw new ArgumentException("Message cannot be empty");
+            throw new ArgumentException("Message cannot be empty", nameof(message.Message));
+
+        if (message.Message.Length > 500)
+            throw new ArgumentException("Message cannot exceed 500 characters", nameof(message.Message));
+
+        var senderExists = await _context.Users.AnyAsync(u => u.Id == message.SenderId);
+        var receiverExists = await _context.Users.AnyAsync(u => u.Id == message.ReceiverId);
+        if (!senderExists || !receiverExists)
+            throw new ArgumentException("Sender or receiver does not exist");
+        throw new ArgumentException("Message cannot be empty");
 
         if (message.Message.Length > 500)
             throw new ArgumentException("Message cannot exceed 500 characters");

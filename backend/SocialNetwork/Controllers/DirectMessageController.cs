@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialNetwork.Controllers
 {
@@ -23,7 +24,7 @@ namespace SocialNetwork.Controllers
 
         [Authorize]
         [HttpPost]
-        public IActionResult Send([FromBody] DirectMessageRequest request)
+        public async Task<IActionResult> Send([FromBody] DirectMessageRequest request)
         {
             var senderId = GetUserId();
             if (senderId == null)

@@ -1,3 +1,4 @@
+using System;
 using SocialNetwork.Services;
 using SocialNetwork.Entity.Models;
 using SocialNetwork.Test.Factories;
@@ -14,6 +15,7 @@ public class PostServiceTests
         var service = new PostService(context);
         var post = new Post { FromUserId = 1, ToUserId = 1, Message = "" };
 
+        Assert.Throws<ArgumentException>(() => service.CreatePost(new Post { Message = "" }));
         var ex = Assert.Throws<ArgumentException>(() => service.CreatePost(post));
 
         Assert.Equal("Message is required", ex.Message);
@@ -52,6 +54,16 @@ public class PostServiceTests
         service.CreatePost(post);
 
         Assert.True(post.CreatedAt != default);
+    }
+
+    [Fact]
+    public void CreatePost_ShouldFail_WhenMessageTooLong()
+    {
+        using var context = AppDbContextInMemoryFactory.Create();
+        var service = new PostService(context);
+        var longMessage = new string('a', 501);
+
+        Assert.Throws<ArgumentException>(() => service.CreatePost(new Post { Message = longMessage }));
     }
 
     [Fact]

@@ -1,19 +1,25 @@
+using System;
 using SocialNetwork.Services;
 using SocialNetwork.Entity.Models;
 using SocialNetwork.Test.Factories;
 using Xunit;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialNetwork.Test.Services;
 
 public class DirectMessageServiceTests
 {
     [Fact]
+    public async Task SendMessage_ShouldFail_WhenMessageEmpty()
     public void SendMessage_ShouldThrow_WhenMessageIsEmpty()
     {
         // arrange
         using var context = AppDbContextInMemoryFactory.Create();
+        context.Users.AddRange(new User { Id = 1, Username = "u1" }, new User { Id = 2, Username = "u2" });
+        context.SaveChanges();
         var service = new DirectMessageService(context);
 
+        var result = await service.SendMessage(new DirectMessage { Message = "", SenderId = 1, ReceiverId = 2 });
         var dm = new DirectMessage
         {
             SenderId = 1,
@@ -27,25 +33,29 @@ public class DirectMessageServiceTests
     }
 
     [Fact]
-    public void SendMessage_ShouldSaveToDatabase()
+    public async Task SendMessage_ShouldSaveToDatabase()
     {
         using var context = AppDbContextInMemoryFactory.Create();
+        context.Users.AddRange(new User { Id = 1, Username = "u1" }, new User { Id = 2, Username = "u2" });
+        context.SaveChanges();
         var service = new DirectMessageService(context);
 
-        service.SendMessage(new DirectMessage { Message = "Hello", SenderId = 1, ReceiverId = 2 });
+        await service.SendMessage(new DirectMessage { Message = "Hello", SenderId = 1, ReceiverId = 2 });
 
         Assert.Equal(1, context.DirectMessages.Count());
     }
 
     [Fact]
-    public void SendMessage_ShouldSetTimestamp()
+    public async Task SendMessage_ShouldSetTimestamp()
     {
         using var context = AppDbContextInMemoryFactory.Create();
+        context.Users.AddRange(new User { Id = 1, Username = "u1" }, new User { Id = 2, Username = "u2" });
+        context.SaveChanges();
         var service = new DirectMessageService(context);
 
         var msg = new DirectMessage { Message = "Hello", SenderId = 1, ReceiverId = 2 };
 
-        service.SendMessage(msg);
+        await service.SendMessage(msg);
 
         Assert.True(msg.SentAt != default);
     }
