@@ -2,6 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 
+type ApiError = {
+  response?: { data?: { error?: string; message?: string } };
+  message?: string;
+};
+
 export default function Login() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -18,11 +23,12 @@ export default function Login() {
       localStorage.setItem("username", res.data.username);
       localStorage.setItem("userId", String(res.data.userId));
       navigate("/posts");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const message =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
+        apiErr.message ||
         "Login misslyckades";
       setError(message);
     } finally {

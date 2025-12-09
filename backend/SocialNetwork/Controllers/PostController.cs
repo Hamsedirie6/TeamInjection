@@ -1,139 +1,161 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SocialNetwork.Services;
+using Microsoft.EntityFrameworkCore;
 using SocialNetwork.DTO;
 using SocialNetwork.Entity.Models;
-using Microsoft.AspNetCore.Authorization;
+using SocialNetwork.Services;
+using Socialnetwork.Entityframework;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Socialnetwork.Entityframework;
-using Microsoft.EntityFrameworkCore;
 
-namespace SocialNetwork.Controllers
+namespace SocialNetwork.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class PostController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class PostController : ControllerBase
+    private readonly PostService service;
+    private readonly AppDbContext context;
+
+    public PostController(PostService service, AppDbContext context)
     {
-        private readonly PostService _service;
-        private readonly AppDbContext _context;
+        this.service = service;
+        this.context = context;
+    }
 
-        public PostController(PostService service, AppDbContext context)
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreatePostRequest request)
+    {
+        var userId = GetUserId();
+        if (userId == null)
         {
-            _service = service;
-            _context = context;
+            return Unauthorized();
         }
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreatePostRequest request)
+
+        if (!await context.Users.AnyAsync(u => u.Id == userId.Value))
         {
-            var userId = GetUserId();
-            if (userId == null)
-                return Unauthorized();
+            return BadRequest(new { error = "Användaren i token finns inte." });
+        }
 
-            if (!await _context.Users.AnyAsync(u => u.Id == userId.Value))
-                return BadRequest(new { error = "Användaren i token finns inte." });
+        if (request.ToUserId != 0 && !await context.Users.AnyAsync(u => u.Id == request.ToUserId))
+        {
+            return BadRequest(new { error = "Mottagaranvändaren finns inte." });
+        }
 
-            if (request.ToUserId != 0 && !await _context.Users.AnyAsync(u => u.Id == request.ToUserId))
-                return BadRequest(new { error = "Mottagaranvändaren finns inte." });
+        var post = new Post
+        {
+            FromUserId = userId.Value,
+            ToUserId = request.ToUserId == 0 ? userId.Value : request.ToUserId,
+            Message = request.Message,
+        };
 
-            var post = new Post
+        var result = await service.CreatePost(post);
+
+        if (!result.Success)
+        {
+            return BadRequest(new { error = result.ErrorMessage });
+        }
+
+        return Ok(MapPost(post));
+    }
+
+    [HttpGet("{id}")]
+    public IActionResult Get(int id)
+    {
+        var post = service.GetById(id);
+        if (post == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(MapPost(post));
+    }
+
+    [HttpGet("user/{userId}")]
+    public IActionResult GetByUser(int userId)
+    {
+        var posts = service.GetByUser(userId)
+            .Select(MapPost);
+
+        return Ok(posts);
+    }
+
+    [Authorize]
+    [HttpGet("timeline")]
+    public IActionResult GetTimeline()
+    {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var posts = service.GetTimeline(userId.Value)
+            .Select(MapPost);
+
+        return Ok(posts);
+    }
+
+    [HttpGet]
+    public IActionResult GetAll()
+    {
+        var posts = service.GetAll()
+            .Select(MapPost);
+
+        return Ok(posts);
+    }
+
+    [Authorize]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var userId = GetUserId();
+        if (userId == null)
+        {
+            return Unauthorized();
+        }
+
+        var result = await service.DeletePost(id, userId.Value);
+        if (!result.Success)
+        {
+            if (result.ErrorMessage == "Post not found")
             {
-                FromUserId = userId.Value,
-                ToUserId = request.ToUserId == 0 ? userId.Value : request.ToUserId,
-                Message = request.Message,
-            };
-
-            var result = _service.CreatePost(post);
-
-            if (!result.Success)
-                return BadRequest(new { error = result.ErrorMessage });
-
-            return Ok(MapPost(post));
-        }
-
-        [HttpGet("{id}")]
-        public IActionResult Get(int id)
-        {
-            var post = _service.GetById(id);
-            if (post == null) return NotFound();
-
-            return Ok(MapPost(post));
-        }
-
-        [HttpGet("user/{userId}")]
-        public IActionResult GetByUser(int userId)
-        {
-            var posts = _service.GetByUser(userId)
-                .Select(MapPost);
-
-            return Ok(posts);
-        }
-
-        [Authorize]
-        [HttpGet("timeline")]
-        public IActionResult GetTimeline()
-        {
-            var userId = GetUserId();
-            if (userId == null)
-                return Unauthorized();
-
-            var posts = _service.GetTimeline(userId.Value)
-                .Select(MapPost);
-
-            return Ok(posts);
-        }
-
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            var posts = _service.GetAll()
-                .Select(MapPost);
-
-            return Ok(posts);
-        }
-
-        [Authorize]
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            var userId = GetUserId();
-            if (userId == null)
-                return Unauthorized();
-
-            var result = _service.DeletePost(id, userId.Value);
-            if (!result.Success)
-            {
-                if (result.ErrorMessage == "Post not found") return NotFound(new { error = result.ErrorMessage });
-                return Forbid();
+                return NotFound(new { error = result.ErrorMessage });
             }
 
-            return NoContent();
+            return Forbid();
         }
 
-        private int? GetUserId()
+        return NoContent();
+    }
+
+    private int? GetUserId()
+    {
+        var sub = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                  User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (int.TryParse(sub, out var id))
         {
-            var sub = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                      User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-            if (int.TryParse(sub, out var id))
-                return id;
-            return null;
+            return id;
         }
 
-        private PostResponse MapPost(Post post)
+        return null;
+    }
+
+    private PostResponse MapPost(Post post)
+    {
+        var fromUsername = context.Users.FirstOrDefault(u => u.Id == post.FromUserId)?.Username;
+        var toUsername = context.Users.FirstOrDefault(u => u.Id == post.ToUserId)?.Username;
+
+        return new PostResponse
         {
-            var fromUsername = _context.Users.FirstOrDefault(u => u.Id == post.FromUserId)?.Username;
-            var toUsername = _context.Users.FirstOrDefault(u => u.Id == post.ToUserId)?.Username;
-
-            return new PostResponse
-            {
-                Id = post.Id,
-                FromUserId = post.FromUserId,
-                ToUserId = post.ToUserId,
-                FromUsername = fromUsername,
-                ToUsername = toUsername,
-                Message = post.Message,
-                CreatedAt = post.CreatedAt
-            };
-        }
+            Id = post.Id,
+            FromUserId = post.FromUserId,
+            ToUserId = post.ToUserId,
+            FromUsername = fromUsername,
+            ToUsername = toUsername,
+            Message = post.Message,
+            CreatedAt = post.CreatedAt
+        };
     }
 }

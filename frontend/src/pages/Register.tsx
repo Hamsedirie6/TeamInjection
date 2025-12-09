@@ -2,6 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
 
+type ApiError = {
+  response?: { data?: { error?: string; message?: string } };
+  message?: string;
+};
+
 export default function Register() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
@@ -15,11 +20,12 @@ export default function Register() {
     try {
       await api.post("/user/create", { username, password });
       navigate("/login");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const message =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
+        apiErr.message ||
         "Registrering misslyckades";
       setError(message);
     } finally {

@@ -12,6 +12,11 @@ type Post = {
   toUsername?: string;
 };
 
+type ApiError = {
+  response?: { data?: { error?: string; message?: string } };
+  message?: string;
+};
+
 export default function Posts() {
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
@@ -19,7 +24,6 @@ export default function Posts() {
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState("");
   const userId = localStorage.getItem("userId");
-  const username = localStorage.getItem("username");
 
   const userMap = useMemo(() => toUserMap(users), [users]);
 
@@ -37,10 +41,11 @@ export default function Posts() {
     try {
       const res = await api.get("/post/timeline");
       setPosts(res.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte hämta inlägg";
       setError(msg);
     }
@@ -59,10 +64,11 @@ export default function Posts() {
       });
       setMessage("");
       await loadPosts();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte skapa inlägg";
       setError(msg);
     }
@@ -74,10 +80,11 @@ export default function Posts() {
     try {
       await api.delete(`/post/${postId}`);
       await loadPosts();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte radera inlägg";
       setError(msg);
     }
@@ -88,9 +95,12 @@ export default function Posts() {
       navigate("/login");
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadUsers();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPosts();
-  }, [userId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, navigate]);
 
   return (
     <section className="page posts-page">

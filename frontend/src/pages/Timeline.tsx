@@ -13,12 +13,16 @@ type Post = {
   createdAt: string;
 };
 
+type ApiError = {
+  response?: { data?: { error?: string; message?: string } };
+  message?: string;
+};
+
 export default function Timeline() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState("");
-  const username = localStorage.getItem("username");
   const userId = localStorage.getItem("userId");
 
   const userMap = useMemo(() => toUserMap(users), [users]);
@@ -37,10 +41,11 @@ export default function Timeline() {
     try {
       const res = await api.get("/post/timeline");
       setPosts(res.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte hämta tidslinje";
       setError(msg);
     }
@@ -51,8 +56,11 @@ export default function Timeline() {
       navigate("/login");
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadUsers();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadTimeline();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, navigate]);
 
   return (

@@ -86,13 +86,13 @@ namespace SocialNetwork.Controllers
 
         [Authorize]
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             var userId = GetUserId();
             if (userId == null)
                 return Unauthorized();
 
-            var result = _service.DeleteMessage(id, userId.Value);
+            var result = await _service.DeleteMessage(id, userId.Value);
             if (!result.Success)
             {
                 if (result.ErrorMessage == "Message not found") return NotFound(new { error = result.ErrorMessage });

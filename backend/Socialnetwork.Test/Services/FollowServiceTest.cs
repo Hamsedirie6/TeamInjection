@@ -1,15 +1,15 @@
-using SocialNetwork.Services;
+using Microsoft.EntityFrameworkCore;
 using SocialNetwork.Entity.Models;
+using SocialNetwork.Services;
 using SocialNetwork.Test.Factories;
 using Xunit;
-using Microsoft.EntityFrameworkCore;
 
 namespace SocialNetwork.Test.Services;
 
 public class FollowServiceTests
 {
     [Fact]
-    public async Task AddFollow_ShouldFail_WhenSameUser()
+    public async Task AddFollowShouldFailWhenSameUser()
     {
         using var context = AppDbContextInMemoryFactory.Create();
         context.Users.AddRange(new User { Id = 1, Username = "u1" });
@@ -23,7 +23,7 @@ public class FollowServiceTests
     }
 
     [Fact]
-    public async Task AddFollow_ShouldSucceed()
+    public async Task AddFollowShouldSucceed()
     {
         using var context = AppDbContextInMemoryFactory.Create();
         context.Users.AddRange(new User { Id = 1, Username = "u1" }, new User { Id = 2, Username = "u2" });
@@ -36,7 +36,7 @@ public class FollowServiceTests
     }
 
     [Fact]
-    public async Task AddFollow_ShouldSaveToDatabase()
+    public async Task AddFollowShouldSaveToDatabase()
     {
         using var context = AppDbContextInMemoryFactory.Create();
         context.Users.AddRange(new User { Id = 1, Username = "u1" }, new User { Id = 2, Username = "u2" });
@@ -49,7 +49,7 @@ public class FollowServiceTests
     }
 
     [Fact]
-    public async Task AddFollow_ShouldFail_WhenUserMissing()
+    public async Task AddFollowShouldFailWhenUserMissing()
     {
         using var context = AppDbContextInMemoryFactory.Create();
         var service = new FollowService(context);

@@ -8,6 +8,11 @@ import {
   type User,
 } from "../api/users";
 
+type ApiError = {
+  response?: { data?: { error?: string; message?: string } };
+  message?: string;
+};
+
 type DirectMessage = {
   id: number;
   senderId: number;
@@ -49,10 +54,11 @@ export default function DirectMessages() {
     try {
       const res = await api.get<Thread[]>("/directmessage/threads");
       setThreads(res.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte hämta konversationer";
       setError(msg);
     }
@@ -65,10 +71,11 @@ export default function DirectMessages() {
         `/directmessage/conversation/${senderId}/${otherUserId}`
       );
       setConversation(res.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte hämta konversation";
       setError(msg);
     }
@@ -81,10 +88,11 @@ export default function DirectMessages() {
       await api.delete(`/directmessage/${messageId}`);
       if (selectedUserId) await loadConversation(selectedUserId);
       await loadThreads();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte radera meddelande";
       setError(msg);
     }
@@ -149,10 +157,11 @@ export default function DirectMessages() {
       setLastUnreadAt(null);
       await loadConversation(receiverId);
       await loadThreads();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte skicka meddelande";
       setError(msg);
     }
@@ -163,20 +172,27 @@ export default function DirectMessages() {
       navigate("/login");
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadUsers();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadThreads();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadUnread();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [senderId, navigate]);
 
   useEffect(() => {
     if (!receiverUsername.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedUserId(null);
       return;
     }
     resolveUserIdByUsername(receiverUsername).then((id) => {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedUserId(id);
       if (id) loadConversation(id);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [receiverUsername]);
 
   useEffect(() => {
@@ -185,6 +201,7 @@ export default function DirectMessages() {
       loadThreads();
     }, 4000);
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedUserId, lastUnreadAt]);
 
   const selectThread = (otherUserId: number) => {
@@ -227,7 +244,7 @@ export default function DirectMessages() {
               </li>
             ))}
             {threads.length === 0 && (
-              <li className="list-item">Inga konversationer än.</li>
+              <li className="list-item">Inga konversationer ännu.</li>
             )}
           </ul>
         </div>
@@ -289,8 +306,7 @@ export default function DirectMessages() {
               <li key={m.id} className="list-item">
                 <div className="list-top">
                   <span className="pill">
-                    {userMap[m.senderId] ?? m.senderId} →{" "}
-                    {userMap[m.receiverId] ?? m.receiverId}
+                    {userMap[m.senderId] ?? m.senderId} {"->"} {userMap[m.receiverId] ?? m.receiverId}
                   </span>
                   <small>{new Date(m.sentAt).toLocaleTimeString()}</small>
                   {String(m.senderId) === senderId && (
