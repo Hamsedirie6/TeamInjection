@@ -12,11 +12,11 @@ public class PostServiceTests
     {
         using var context = AppDbContextInMemoryFactory.Create();
         var service = new PostService(context);
+        var post = new Post { FromUserId = 1, ToUserId = 1, Message = "" };
 
-        var result = service.CreatePost(new Post { Message = "" });
+        var ex = Assert.Throws<ArgumentException>(() => service.CreatePost(post));
 
-        Assert.False(result.Success);
-        Assert.Equal("Message is required", result.ErrorMessage);
+        Assert.Equal("Message is required", ex.Message);
     }
 
     [Fact]
@@ -52,5 +52,60 @@ public class PostServiceTests
         service.CreatePost(post);
 
         Assert.True(post.CreatedAt != default);
+    }
+
+    [Fact]
+    public void CreatePost_ShouldThrow_WhenMessageIsEmpty()
+    {
+        // arrange
+        using var context = AppDbContextInMemoryFactory.Create();
+        var service = new PostService(context);
+        var post = new Post
+        {
+            FromUserId = 1,
+            ToUserId = 2,
+            Message = " "
+        };
+
+        // act + assert
+        var ex = Assert.Throws<ArgumentException>(() => service.CreatePost(post));
+        Assert.Equal("Message is required", ex.Message);
+    }
+
+    [Fact]
+    public void CreatePost_ShouldFail_WhenMessageTooLong()
+    {
+        using var context = AppDbContextInMemoryFactory.Create();
+        var service = new PostService(context);
+        var longText = new string('a', 501);
+
+        var post = new Post { FromUserId = 1, ToUserId = 1, Message = longText };
+
+        var ex = Assert.Throws<ArgumentException>(() => service.CreatePost(post));
+
+        Assert.Equal("Message cannot exceed 500 characters", ex.Message);
+    }
+    [Fact]
+    public void CreatePost_ShouldSucceed_WhenMessageIsValid()
+    {
+        // arrange
+        using var context = AppDbContextInMemoryFactory.Create();
+        var service = new PostService(context);
+
+        var post = new Post
+        {
+            FromUserId = 1,
+            ToUserId = 2,
+            Message = "Hej, detta är ett giltigt inlägg."
+        };
+
+        // act
+        var result = service.CreatePost(post);
+
+        // assert
+        Assert.True(result.Success);
+        Assert.Equal("", result.ErrorMessage);
+        Assert.Single(context.Posts);
+        Assert.NotEqual(default, post.CreatedAt);
     }
 }

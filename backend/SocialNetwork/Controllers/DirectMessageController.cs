@@ -20,6 +20,7 @@ namespace SocialNetwork.Controllers
         {
             _service = service;
         }
+
         [Authorize]
         [HttpPost]
         public IActionResult Send([FromBody] DirectMessageRequest request)
@@ -35,10 +36,19 @@ namespace SocialNetwork.Controllers
                 Message = request.Message
             };
 
-            var result = _service.SendMessage(msg);
+            try
+            {
+                var result = _service.SendMessage(msg);
 
-            if (!result.Success)
-                return BadRequest(new { error = result.ErrorMessage });
+                // Om du i framtiden vill att service ska kunna returnera andra fel
+                if (!result.Success)
+                    return BadRequest(new { error = result.ErrorMessage });
+            }
+            catch (ArgumentException ex)
+            {
+                // Valideringsfel (t.ex. > 500 tecken)
+                return BadRequest(new { error = ex.Message });
+            }
 
             var response = new DirectMessageResponse
             {
@@ -87,7 +97,9 @@ namespace SocialNetwork.Controllers
             var result = _service.DeleteMessage(id, userId.Value);
             if (!result.Success)
             {
-                if (result.ErrorMessage == "Message not found") return NotFound(new { error = result.ErrorMessage });
+                if (result.ErrorMessage == "Message not found")
+                    return NotFound(new { error = result.ErrorMessage });
+
                 return Forbid();
             }
 

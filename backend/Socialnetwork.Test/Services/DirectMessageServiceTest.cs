@@ -8,15 +8,22 @@ namespace SocialNetwork.Test.Services;
 public class DirectMessageServiceTests
 {
     [Fact]
-    public void SendMessage_ShouldFail_WhenMessageEmpty()
+    public void SendMessage_ShouldThrow_WhenMessageIsEmpty()
     {
+        // arrange
         using var context = AppDbContextInMemoryFactory.Create();
         var service = new DirectMessageService(context);
 
-        var result = service.SendMessage(new DirectMessage { Message = "" });
+        var dm = new DirectMessage
+        {
+            SenderId = 1,
+            ReceiverId = 2,
+            Message = " "
+        };
 
-        Assert.False(result.Success);
-        Assert.Equal("Message cannot be empty", result.ErrorMessage);
+        // act + assert
+        var ex = Assert.Throws<ArgumentException>(() => service.SendMessage(dm));
+        Assert.Equal("Message cannot be empty", ex.Message);
     }
 
     [Fact]
@@ -42,4 +49,51 @@ public class DirectMessageServiceTests
 
         Assert.True(msg.SentAt != default);
     }
+
+    [Fact]
+    public void SendMessage_ShouldThrow_WhenMessageLongerThan500Chars()
+    {
+        // arrange
+        using var context = AppDbContextInMemoryFactory.Create();
+        var service = new DirectMessageService(context);
+
+        var longMessage = new string('a', 501);
+
+        var dm = new DirectMessage
+        {
+            SenderId = 1,
+            ReceiverId = 2,
+            Message = longMessage
+        };
+
+        // act + assert
+        var ex = Assert.Throws<ArgumentException>(() => service.SendMessage(dm));
+        Assert.Equal("Message cannot exceed 500 characters", ex.Message);
+    }
+    [Fact]
+    public void SendMessage_ShouldSucceed_WhenMessageIsValid()
+    {
+        // arrange
+        using var context = AppDbContextInMemoryFactory.Create();
+        var service = new DirectMessageService(context);
+
+        var dm = new DirectMessage
+        {
+            SenderId = 1,
+            ReceiverId = 2,
+            Message = "Tja, läget?"
+        };
+
+        // act
+        var result = service.SendMessage(dm);
+
+        // assert
+        Assert.True(result.Success);
+        Assert.Equal("", result.ErrorMessage);
+        Assert.Single(context.DirectMessages);
+        Assert.NotEqual(default, dm.SentAt);
+    }
+
+
+
 }
