@@ -25,6 +25,10 @@ public class DirectMessageService
         var receiverExists = await _context.Users.AnyAsync(u => u.Id == message.ReceiverId);
         if (!senderExists || !receiverExists)
             throw new ArgumentException("Sender or receiver does not exist");
+        throw new ArgumentException("Message cannot be empty");
+
+        if (message.Message.Length > 500)
+            throw new ArgumentException("Message cannot exceed 500 characters");
 
         message.SentAt = DateTime.UtcNow;
 

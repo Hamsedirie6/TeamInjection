@@ -22,6 +22,7 @@ namespace SocialNetwork.Controllers
             _service = service;
             _context = context;
         }
+
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreatePostRequest request)
@@ -43,10 +44,18 @@ namespace SocialNetwork.Controllers
                 Message = request.Message,
             };
 
-            var result = _service.CreatePost(post);
+            try
+            {
+                var result = _service.CreatePost(post);
 
-            if (!result.Success)
-                return BadRequest(new { error = result.ErrorMessage });
+                if (!result.Success)
+                    return BadRequest(new { error = result.ErrorMessage });
+            }
+            catch (ArgumentException ex)
+            {
+                // Valideringsfel (t.ex. tomt meddelande, > 500 tecken)
+                return BadRequest(new { error = ex.Message });
+            }
 
             return Ok(MapPost(post));
         }
@@ -103,7 +112,9 @@ namespace SocialNetwork.Controllers
             var result = _service.DeletePost(id, userId.Value);
             if (!result.Success)
             {
-                if (result.ErrorMessage == "Post not found") return NotFound(new { error = result.ErrorMessage });
+                if (result.ErrorMessage == "Post not found")
+                    return NotFound(new { error = result.ErrorMessage });
+
                 return Forbid();
             }
 

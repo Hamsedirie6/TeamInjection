@@ -19,6 +19,10 @@ public class PostService
 
         if (post.Message.Length > 500)
             throw new ArgumentException("Message cannot exceed 500 characters", nameof(post.Message));
+        throw new ArgumentException("Message is required");
+
+        if (post.Message.Length > 500)
+            throw new ArgumentException("Message cannot exceed 500 characters");
 
         post.CreatedAt = DateTime.UtcNow;
 
@@ -48,7 +52,6 @@ public class PostService
             .Select(f => f.FollowedId)
             .ToList();
 
-        // Include own posts in the timeline.
         followedIds.Add(userId);
 
         return _context.Posts
