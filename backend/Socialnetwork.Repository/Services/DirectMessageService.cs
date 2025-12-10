@@ -6,11 +6,11 @@ namespace SocialNetwork.Services;
 
 public class DirectMessageService
 {
-    private readonly AppDbContext _context;
+    private readonly AppDbContext context;
 
     public DirectMessageService(AppDbContext context)
     {
-        _context = context;
+        this.context = context;
     }
 
     public async Task<(bool Success, string ErrorMessage)> SendMessage(DirectMessage message)
@@ -21,22 +21,22 @@ public class DirectMessageService
         if (message.Message.Length > 500)
             throw new ArgumentException("Message cannot exceed 500 characters", nameof(message.Message));
 
-        var senderExists = await _context.Users.AnyAsync(u => u.Id == message.SenderId);
-        var receiverExists = await _context.Users.AnyAsync(u => u.Id == message.ReceiverId);
+        var senderExists = await context.Users.AnyAsync(u => u.Id == message.SenderId);
+        var receiverExists = await context.Users.AnyAsync(u => u.Id == message.ReceiverId);
         if (!senderExists || !receiverExists)
             throw new ArgumentException("Sender or receiver does not exist");
 
         message.SentAt = DateTime.UtcNow;
 
-        _context.DirectMessages.Add(message);
-        _context.SaveChanges();
+        context.DirectMessages.Add(message);
+        await context.SaveChangesAsync();
 
-        return (true, "");
+        return (true, string.Empty);
     }
 
     public IEnumerable<DirectMessage> GetConversation(int user1, int user2)
     {
-        return _context.DirectMessages
+        return context.DirectMessages
             .Where(m =>
                 (m.SenderId == user1 && m.ReceiverId == user2) ||
                 (m.SenderId == user2 && m.ReceiverId == user1))
@@ -48,7 +48,7 @@ public class DirectMessageService
     {
         var since = sinceUtc ?? DateTime.UtcNow.AddMinutes(-30);
 
-        return _context.DirectMessages
+        return context.DirectMessages
             .Where(m => m.ReceiverId == userId && m.SentAt >= since)
             .OrderBy(m => m.SentAt)
             .Take(limit)
@@ -57,7 +57,7 @@ public class DirectMessageService
 
     public IEnumerable<(int OtherUserId, DirectMessage LastMessage)> GetThreads(int userId)
     {
-        var relevantMessages = _context.DirectMessages
+        var relevantMessages = context.DirectMessages
             .Where(m => m.SenderId == userId || m.ReceiverId == userId)
             .ToList();
 
@@ -73,18 +73,18 @@ public class DirectMessageService
             .ToList();
     }
 
-    public (bool Success, string ErrorMessage) DeleteMessage(int messageId, int userId)
+    public async Task<(bool Success, string ErrorMessage)> DeleteMessage(int messageId, int userId)
     {
-        var msg = _context.DirectMessages.FirstOrDefault(m => m.Id == messageId);
+        var msg = context.DirectMessages.FirstOrDefault(m => m.Id == messageId);
         if (msg == null)
             return (false, "Message not found");
 
         if (msg.SenderId != userId)
             return (false, "Not allowed to delete this message");
 
-        _context.DirectMessages.Remove(msg);
-        _context.SaveChanges();
+        context.DirectMessages.Remove(msg);
+        await context.SaveChangesAsync();
 
-        return (true, "");
+        return (true, string.Empty);
     }
 }

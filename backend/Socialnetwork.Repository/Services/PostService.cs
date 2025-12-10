@@ -5,14 +5,14 @@ namespace SocialNetwork.Services;
 
 public class PostService
 {
-    private readonly AppDbContext _context;
+    private readonly AppDbContext context;
 
     public PostService(AppDbContext context)
     {
-        _context = context;
+        this.context = context;
     }
 
-    public (bool Success, string ErrorMessage) CreatePost(Post post)
+    public async Task<(bool Success, string ErrorMessage)> CreatePost(Post post)
     {
         if (string.IsNullOrWhiteSpace(post.Message))
             throw new ArgumentException("Message is required", nameof(post.Message));
@@ -22,20 +22,20 @@ public class PostService
 
         post.CreatedAt = DateTime.UtcNow;
 
-        _context.Posts.Add(post);
-        _context.SaveChanges();
+        context.Posts.Add(post);
+        await context.SaveChangesAsync();
 
-        return (true, "");
+        return (true, string.Empty);
     }
 
     public Post? GetById(int id)
     {
-        return _context.Posts.FirstOrDefault(p => p.Id == id);
+        return context.Posts.FirstOrDefault(p => p.Id == id);
     }
 
     public IEnumerable<Post> GetByUser(int userId)
     {
-        return _context.Posts
+        return context.Posts
             .Where(p => p.FromUserId == userId || p.ToUserId == userId)
             .OrderByDescending(p => p.CreatedAt)
             .ToList();
@@ -43,7 +43,7 @@ public class PostService
 
     public IEnumerable<Post> GetTimeline(int userId)
     {
-        var followedIds = _context.Follows
+        var followedIds = context.Follows
             .Where(f => f.FollowerId == userId)
             .Select(f => f.FollowedId)
             .ToList();
@@ -51,7 +51,7 @@ public class PostService
         // Include own posts in the timeline.
         followedIds.Add(userId);
 
-        return _context.Posts
+        return context.Posts
             .Where(p => followedIds.Contains(p.FromUserId))
             .OrderByDescending(p => p.CreatedAt)
             .ToList();
@@ -59,21 +59,21 @@ public class PostService
 
     public IEnumerable<Post> GetAll()
     {
-        return _context.Posts.ToList();
+        return context.Posts.ToList();
     }
 
-    public (bool Success, string ErrorMessage) DeletePost(int postId, int userId)
+    public async Task<(bool Success, string ErrorMessage)> DeletePost(int postId, int userId)
     {
-        var post = _context.Posts.FirstOrDefault(p => p.Id == postId);
+        var post = context.Posts.FirstOrDefault(p => p.Id == postId);
         if (post == null)
             return (false, "Post not found");
 
         if (post.FromUserId != userId)
             return (false, "Not allowed to delete this post");
 
-        _context.Posts.Remove(post);
-        _context.SaveChanges();
+        context.Posts.Remove(post);
+        await context.SaveChangesAsync();
 
-        return (true, "");
+        return (true, string.Empty);
     }
 }

@@ -9,56 +9,56 @@ namespace SocialNetwork.Test.Services;
 public class PostServiceTests
 {
     [Fact]
-    public void CreatePost_ShouldFail_WhenMessageIsEmpty()
+    public async Task CreatePostShouldFailWhenMessageIsEmpty()
     {
         using var context = AppDbContextInMemoryFactory.Create();
         var service = new PostService(context);
 
-        Assert.Throws<ArgumentException>(() => service.CreatePost(new Post { Message = "" }));
+        await Assert.ThrowsAsync<ArgumentException>(() => service.CreatePost(new Post { Message = string.Empty }));
     }
 
     [Fact]
-    public void CreatePost_ShouldSucceed_WithValidMessage()
+    public async Task CreatePostShouldSucceedWithValidMessage()
     {
         using var context = AppDbContextInMemoryFactory.Create();
         var service = new PostService(context);
 
-        var result = service.CreatePost(new Post { Message = "Hello world" });
+        var result = await service.CreatePost(new Post { Message = "Hello world" });
 
         Assert.True(result.Success);
-        Assert.Equal("", result.ErrorMessage);
+        Assert.Equal(string.Empty, result.ErrorMessage);
     }
 
     [Fact]
-    public void CreatePost_ShouldSaveToDatabase()
+    public async Task CreatePostShouldSaveToDatabase()
     {
         using var context = AppDbContextInMemoryFactory.Create();
         var service = new PostService(context);
 
-        service.CreatePost(new Post { Message = "Test" });
+        await service.CreatePost(new Post { Message = "Test" });
 
         Assert.Equal(1, context.Posts.Count());
     }
 
     [Fact]
-    public void CreatePost_ShouldAssignDateAutomatically()
+    public async Task CreatePostShouldAssignDateAutomatically()
     {
         using var context = AppDbContextInMemoryFactory.Create();
         var service = new PostService(context);
 
         var post = new Post { Message = "Auto date" };
-        service.CreatePost(post);
+        await service.CreatePost(post);
 
         Assert.True(post.CreatedAt != default);
     }
 
     [Fact]
-    public void CreatePost_ShouldFail_WhenMessageTooLong()
+    public async Task CreatePostShouldFailWhenMessageTooLong()
     {
         using var context = AppDbContextInMemoryFactory.Create();
         var service = new PostService(context);
         var longMessage = new string('a', 501);
 
-        Assert.Throws<ArgumentException>(() => service.CreatePost(new Post { Message = longMessage }));
+        await Assert.ThrowsAsync<ArgumentException>(() => service.CreatePost(new Post { Message = longMessage }));
     }
 }

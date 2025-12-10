@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import api from "../api/api";
 import { fetchUsers, toUserMap, type User } from "../api/users";
 
+type ApiError = {
+  response?: { data?: { error?: string; message?: string } };
+  message?: string;
+};
+
 export default function Follow() {
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
@@ -17,11 +22,12 @@ export default function Follow() {
     try {
       const all = await fetchUsers();
       setUsers(all);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        err.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
+        apiErr.message ||
         "Kunde inte hämta användare";
       setError(msg);
     }
@@ -30,11 +36,12 @@ export default function Follow() {
   const loadFollowing = async (userId: number) => {
     try {
       const res = await api.get(`/follow/following/${userId}`);
-      setFollowing(res.data.map((f: any) => f.followedId));
-    } catch (err: any) {
+      setFollowing(res.data.map((f: { followedId: number }) => f.followedId));
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte hämta följda";
       setError(msg);
     }
@@ -44,10 +51,11 @@ export default function Follow() {
     try {
       const res = await api.get(`/follow/friends`);
       setFriends(res.data as number[]);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte hämta vänner";
       setError(msg);
     }
@@ -56,24 +64,30 @@ export default function Follow() {
   const loadMyFollowers = async (userId: number) => {
     try {
       const res = await api.get(`/follow/followers/${userId}`);
-      setFollowers(res.data.map((f: any) => f.followerId));
-    } catch (err: any) {
+      setFollowers(res.data.map((f: { followerId: number }) => f.followerId));
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte hämta följare";
       setError(msg);
     }
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadUsers();
     if (currentUserId) {
       const id = Number(currentUserId);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadFollowing(id);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadFriends();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadMyFollowers(id);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserId]);
 
   const visibleUsers = users.filter((u) => {
@@ -94,10 +108,11 @@ export default function Follow() {
         loadFriends();
         loadMyFollowers(id);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte följa användare";
       setError(msg);
     }
@@ -115,10 +130,11 @@ export default function Follow() {
         loadFriends();
         loadMyFollowers(id);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const apiErr = err as ApiError;
       const msg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
+        apiErr.response?.data?.error ||
+        apiErr.response?.data?.message ||
         "Kunde inte avfölja användare";
       setError(msg);
     }

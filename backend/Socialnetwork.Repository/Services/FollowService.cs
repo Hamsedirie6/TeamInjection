@@ -6,11 +6,11 @@ namespace SocialNetwork.Services;
 
 public class FollowService
 {
-    private readonly AppDbContext _context;
+    private readonly AppDbContext context;
 
     public FollowService(AppDbContext context)
     {
-        _context = context;
+        this.context = context;
     }
 
     public async Task<(bool Success, string ErrorMessage)> AddFollow(Follow follow)
@@ -18,34 +18,34 @@ public class FollowService
         if (follow.FollowerId == follow.FollowedId)
             return (false, "User cannot follow themselves");
 
-        var followerExists = await _context.Users.AnyAsync(u => u.Id == follow.FollowerId);
-        var followedExists = await _context.Users.AnyAsync(u => u.Id == follow.FollowedId);
+        var followerExists = await context.Users.AnyAsync(u => u.Id == follow.FollowerId);
+        var followedExists = await context.Users.AnyAsync(u => u.Id == follow.FollowedId);
         if (!followerExists || !followedExists)
             return (false, "User not found");
 
-        _context.Follows.Add(follow);
-        _context.SaveChanges();
+        context.Follows.Add(follow);
+        await context.SaveChangesAsync();
 
-        return (true, "");
+        return (true, string.Empty);
     }
 
     public IEnumerable<Follow> GetFollowers(int userId)
     {
-        return _context.Follows.Where(f => f.FollowedId == userId).ToList();
+        return context.Follows.Where(f => f.FollowedId == userId).ToList();
     }
 
     public IEnumerable<Follow> GetFollowing(int userId)
     {
-        return _context.Follows.Where(f => f.FollowerId == userId).ToList();
+        return context.Follows.Where(f => f.FollowerId == userId).ToList();
     }
 
     public IEnumerable<int> GetFriends(int userId)
     {
-        var followingIds = _context.Follows
+        var followingIds = context.Follows
             .Where(f => f.FollowerId == userId)
             .Select(f => f.FollowedId);
 
-        var followerIds = _context.Follows
+        var followerIds = context.Follows
             .Where(f => f.FollowedId == userId)
             .Select(f => f.FollowerId);
 
@@ -54,13 +54,13 @@ public class FollowService
 
     public (bool Success, string ErrorMessage) RemoveFollow(int followerId, int followedId)
     {
-        var follow = _context.Follows.FirstOrDefault(f => f.FollowerId == followerId && f.FollowedId == followedId);
+        var follow = context.Follows.FirstOrDefault(f => f.FollowerId == followerId && f.FollowedId == followedId);
         if (follow == null)
             return (false, "Follow relation not found");
 
-        _context.Follows.Remove(follow);
-        _context.SaveChanges();
+        context.Follows.Remove(follow);
+        context.SaveChanges();
 
-        return (true, "");
+        return (true, string.Empty);
     }
 }
